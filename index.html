@@ -761,18 +761,20 @@
       .employee-card { grid-template-columns: 1fr auto; }
       .employee-card > * { grid-column: auto; }
       .employee-card .days { grid-column: 1 / -1; }
-      #storeView .card { padding: 14px; }
-      #storeView .card-head { margin-bottom: 12px; }
+      #storeView .card { padding: 16px; }
+      #storeView .card-head { margin-bottom: 16px; }
       #storeView .card-head .subtle { line-height: 1.45; }
-      #openingHoursList { display: grid; gap: 10px; }
+      #openingHoursList { display: grid; gap: 14px; }
       .hours-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px 10px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 14px;
+        row-gap: 14px;
         align-items: end;
-        padding: 14px;
+        padding: 16px;
         border: 1px solid var(--line);
         border-radius: 14px;
         background: #fbfdfe;
+        overflow: hidden;
       }
       .hours-row.is-closed {
         background: #eef1f3;
@@ -781,6 +783,10 @@
       .hours-row.is-closed .hours-start,
       .hours-row.is-closed .hours-end,
       .hours-row.is-closed .factor { display: none; }
+      .hours-row.is-closed {
+        min-height: 82px;
+        align-items: center;
+      }
       .hours-row:last-child { border-bottom: 1px solid var(--line); }
       .hours-day {
         align-self: center;
@@ -792,9 +798,31 @@
       .hours-open { grid-column: 2; grid-row: 1; }
       .hours-start { grid-column: 1; grid-row: 2; }
       .hours-end { grid-column: 2; grid-row: 2; }
-      .hours-row .factor { grid-column: 1 / -1; grid-row: 3; }
+      .hours-start,
+      .hours-end,
+      .hours-open { width: 100%; min-width: 0; overflow: hidden; }
+      .hours-row .factor {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        width: min(190px, 100%);
+        justify-self: start;
+      }
       .hours-control > label { font-size: .7rem; }
-      .hours-row input, .hours-row select { min-height: 42px; }
+      .hours-row input,
+      .hours-row select {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+        max-width: 100%;
+        min-height: 42px;
+      }
+      .hours-start input,
+      .hours-end input {
+        -webkit-appearance: none;
+        appearance: none;
+        padding-inline: 10px;
+        text-align: center;
+      }
       .week-budget-row { grid-template-columns: 1fr 110px; }
       .week-budget-row .capacity { grid-column: 1 / -1; text-align: left; }
       .schedule-grid { grid-template-columns: repeat(7, 165px); }
@@ -1670,6 +1698,14 @@
         if (el('densitySelect')) el('densitySelect').value = density;
       }
 
+      function nearestFactorCategory(value) {
+        const factor = Number(value) || 1;
+        const categories = [0.75, 1, 1.25, 1.5];
+        return categories.reduce((nearest, current) =>
+          Math.abs(current - factor) < Math.abs(nearest - factor) ? current : nearest
+        , categories[0]);
+      }
+
       function renderSettings() {
         el('minShift').value = state.settings.minShift;
         el('maxShift').value = state.settings.maxShift;
@@ -1700,8 +1736,13 @@
               <input id="opening-end-${index}" type="time" value="${day.end}" data-opening="${index}" data-field="end" ${day.open ? '' : 'disabled'} />
             </div>
             <div class="hours-control factor">
-              <label for="opening-factor-${index}">Druktefactor</label>
-              <input id="opening-factor-${index}" type="number" min="0.1" max="3" step="0.05" value="${day.factor}" data-opening="${index}" data-field="factor" ${day.open ? '' : 'disabled'} />
+              <label for="opening-factor-${index}">Drukte</label>
+              <select id="opening-factor-${index}" data-opening="${index}" data-field="factor" ${day.open ? '' : 'disabled'}>
+                <option value="0.75" ${nearestFactorCategory(day.factor) === 0.75 ? 'selected' : ''}>Rustig</option>
+                <option value="1" ${nearestFactorCategory(day.factor) === 1 ? 'selected' : ''}>Normaal</option>
+                <option value="1.25" ${nearestFactorCategory(day.factor) === 1.25 ? 'selected' : ''}>Druk</option>
+                <option value="1.5" ${nearestFactorCategory(day.factor) === 1.5 ? 'selected' : ''}>Heel druk</option>
+              </select>
             </div>
           `;
           hoursList.appendChild(row);
