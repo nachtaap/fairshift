@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17324d" />
+  <title>Werkrooster Planner</title>
+  <style>
+    :root {
+      --bg: #f4f7fa;
+      --surface: #ffffff;
+      --surface-soft: #edf3f7;
+      --text: #17212b;
+      --muted: #667482;
+      --line: #d8e1e8;
+      --primary: #17324d;
+      --primary-2: #245c7a;
+      --accent: #17a398;
+      --accent-soft: #dff6f3;
+      --warning: #d97917;
+      --warning-soft: #fff1df;
+      --danger: #c54141;
+      --danger-soft: #fde8e8;
+      --success: #25855a;
+      --success-soft: #e3f5eb;
+      --shadow: 0 12px 32px rgba(23, 50, 77, 0.08);
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 6px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), #72d7cf);
+      color: var(--primary);
+      font-weight: 900;
+      letter-spacing: -1px;
+      box-shadow: 0 10px 24px rgba(23, 163, 152, 0.25);
+    }
+
+    .brand strong { display: block; font-size: 1.04rem; }
+    .brand span { color: #bfd0dc; font-size: .82rem; }
+
+    .nav {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: #d8e6ef;
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-align: left;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+    }
+
+    .nav .icon {
+      width: 24px;
+      text-align: center;
+      font-size: 1.08rem;
+    }
+
+    .sidebar-foot {
+      margin-top: auto;
+      border-top: 1px solid rgba(255,255,255,.14);
+      padding: 16px 6px 0;
+      color: #bfd0dc;
+      font-size: .8rem;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 30px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .topbar h1 {
+      margin: 0 0 4px;
+      letter-spacing: -.035em;
+      font-size: clamp(1.8rem, 4vw, 2.45rem);
+    }
+
+    .topbar p { margin: 0; color: var(--muted); }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+    }
+
+    .btn.primary { background: var(--primary); color: white; }
+    .btn.primary:hover { background: #0f263a; }
+    .btn.accent { background: var(--accent); color: white; }
+    .btn.accent:hover { background: #12887f; }
+    .btn.ghost { background: var(--surface); border-color: var(--line); color: var(--text); }
+    .btn.ghost:hover { background: var(--surface-soft); }
+    .btn.danger { color: var(--danger); border-color: #efc8c8; background: white; }
+    .btn.small { min-height: 34px; padding: 7px 10px; font-size: .84rem; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card + .card { margin-top: 18px; }
+    .card h2, .card h3 { margin-top: 0; }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card-head h2, .card-head h3 { margin: 0; }
+    .subtle { color: var(--muted); font-size: .9rem; }
+
+    .kpi {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #f8fbfd);
+    }
+
+    .kpi .label { color: var(--muted); font-size: .82rem; font-weight: 700; }
+    .kpi .value { font-size: 1.75rem; font-weight: 900; letter-spacing: -.04em; margin-top: 5px; }
+    .kpi .meta { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field { display: grid; gap: 6px; }
+    .field label { color: var(--muted); font-size: .78rem; font-weight: 800; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(23, 163, 152, 0.13);
+    }
+
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+
+    .employee-list { display: grid; gap: 12px; }
+
+    .employee-card {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 15px;
+      background: #fbfdfe;
+      display: grid;
+      grid-template-columns: minmax(160px, 1.3fr) minmax(120px, .8fr) 100px 120px minmax(250px, 1.4fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .employee-card > * { min-width: 0; }
+    .employee-name strong,
+    .employee-name span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .employee-name span { color: var(--muted); font-size: .82rem; }
+    .employee-card .badge { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: .72rem;
+      font-weight: 900;
+      background: var(--surface-soft);
+      color: var(--primary-2);
+    }
+
+    .badge.weekend { background: var(--warning-soft); color: #9a530a; }
+    .badge.fixed { background: var(--accent-soft); color: #0e756e; }
+
+    .days {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .day-pill {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: .72rem;
+      font-weight: 900;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--muted);
+    }
+
+    .day-pill.on { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+    th { color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .045em; }
+    tr:last-child td { border-bottom: 0; }
+
+    .hours-row {
+      display: grid;
+      grid-template-columns: 110px 70px 1fr 1fr 110px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hours-row:last-child { border-bottom: 0; }
+    .hours-row input, .hours-row select {
+      width: 100%;
+      min-height: 38px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      padding: 7px 9px;
+    }
+
+    .week-budget-list { display: grid; gap: 9px; }
+    .week-budget-row {
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) 140px 150px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fbfdfe;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .week-budget-row input {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 8px 10px;
+      width: 100%;
+    }
+
+    .week-budget-row .capacity { text-align: right; color: var(--muted); font-size: .82rem; }
+
+    .schedule-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .month-switcher { display: flex; gap: 8px; align-items: center; }
+    .month-switcher input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      min-height: 42px;
+      padding: 8px 11px;
+      background: white;
+      font-weight: 800;
+    }
+
+    .week-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
+    .week-tab {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      padding: 8px 12px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .week-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .week-summary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .summary-chip {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      font-size: .8rem;
+      font-weight: 800;
+      color: var(--primary-2);
+    }
+    .summary-chip.ok { background: var(--success-soft); color: var(--success); }
+    .summary-chip.warn { background: var(--warning-soft); color: #9a530a; }
+    .summary-chip.bad { background: var(--danger-soft); color: var(--danger); }
+
+    .schedule-view-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-soft);
+    }
+
+    .schedule-mode-btn {
+      min-height: 34px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .schedule-mode-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(23, 50, 77, .09);
+    }
+
+    .schedule-panel[hidden] { display: none !important; }
+
+    .matrix-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+    }
+
+    .schedule-matrix {
+      width: 100%;
+      min-width: 1020px;
+      table-layout: fixed;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .79rem;
+    }
+
+    .schedule-matrix col.name-col { width: 160px; }
+    .schedule-matrix col.day-col { width: 112px; }
+    .schedule-matrix col.total-col { width: 72px; }
+
+    .schedule-matrix th,
+    .schedule-matrix td {
+      height: 58px;
+      padding: 6px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      overflow: hidden;
+    }
+
+    .schedule-matrix tr > *:last-child { border-right: 0; }
+    .schedule-matrix tfoot tr:last-child > * { border-bottom: 0; }
+
+    .schedule-matrix thead th {
+      height: 64px;
+      background: var(--primary);
+      color: white;
+      text-align: left;
+      font-weight: 900;
+    }
+
+    .schedule-matrix thead th:not(:first-child) { text-align: center; }
+
+    .schedule-matrix .matrix-day-name,
+    .schedule-matrix .matrix-day-meta,
+    .matrix-employee-name,
+    .matrix-employee-role,
+    .matrix-shift-time,
+    .matrix-shift-meta {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .schedule-matrix .matrix-day-name { font-size: .84rem; }
+    .schedule-matrix .matrix-day-meta { margin-top: 3px; font-size: .66rem; font-weight: 650; opacity: .8; }
+
+    .matrix-employee {
+      background: #f7fafc;
+      text-align: left;
+    }
+
+    .matrix-employee-name { color: var(--text); font-size: .86rem; font-weight: 900; }
+    .matrix-employee-role { margin-top: 3px; color: var(--muted); font-size: .68rem; font-weight: 650; }
+
+    .matrix-cell {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      padding: 5px 6px;
+      color: var(--text);
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .matrix-cell:hover:not(:disabled) {
+      border-color: #b9cbd6;
+      background: var(--surface-soft);
+    }
+
+    .matrix-cell.has-shift {
+      background: var(--accent-soft);
+      border-color: #bce8e3;
+    }
+
+    .matrix-cell.is-free { color: var(--muted); }
+    .matrix-cell.is-unavailable,
+    .matrix-cell.is-closed {
+      color: #8b969f;
+      background: #f1f3f5;
+      cursor: default;
+    }
+
+    .matrix-cell.is-outside { opacity: .52; cursor: default; }
+    .matrix-shift-time { font-weight: 900; font-size: .76rem; }
+    .matrix-shift-meta { margin-top: 3px; color: var(--primary-2); font-size: .64rem; font-weight: 750; }
+    .matrix-empty-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .68rem; font-weight: 750; }
+
+    .matrix-total {
+      text-align: center;
+      font-weight: 900;
+      white-space: nowrap;
+      background: #fbfdfe;
+    }
+
+    .schedule-matrix tfoot th,
+    .schedule-matrix tfoot td {
+      height: 44px;
+      background: #eef4f7;
+      font-weight: 900;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .schedule-matrix tfoot th { text-align: left; }
+
+    .matrix-print-heading {
+      display: none;
+    }
+
+    .shift strong,
+    .shift span,
+    .shift .shift-role {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(170px, 1fr));
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .day-column {
+      min-height: 310px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fbfdfe;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .day-column.outside { opacity: .48; }
+    .day-head { display: flex; justify-content: space-between; gap: 8px; min-height: 42px; }
+    .day-head > div:first-child { min-width: 0; }
+    .day-head strong,
+    .day-head span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .day-head span { color: var(--muted); font-size: .76rem; }
+    .day-total { font-size: .74rem; font-weight: 900; color: var(--primary-2); white-space: nowrap; }
+
+    .shifts { display: grid; gap: 8px; }
+    .shift {
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: white;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(23, 50, 77, .06);
+      position: relative;
+      height: 78px;
+      overflow: hidden;
+    }
+    .shift:hover { border-color: #b8c8d3; }
+    .shift strong { display: block; font-size: .88rem; padding-right: 20px; }
+    .shift span { color: var(--muted); font-size: .75rem; }
+    .shift .shift-role { margin-top: 2px; font-size: .7rem; color: var(--primary-2); font-weight: 700; }
+    .shift .edit-shift {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 25px;
+      height: 25px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+    }
+    .shift .edit-shift:hover { background: var(--surface-soft); }
+
+    .add-shift {
+      margin-top: auto;
+      border: 1px dashed #b9c8d3;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--primary-2);
+      padding: 8px;
+      font-weight: 800;
+      font-size: .78rem;
+    }
+    .add-shift:hover { background: var(--surface-soft); }
+
+    .empty-day {
+      color: var(--muted);
+      font-size: .8rem;
+      padding: 12px 4px;
+      text-align: center;
+    }
+
+    .progress-track {
+      height: 9px;
+      min-width: 140px;
+      border-radius: 999px;
+      background: #e8eef2;
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; border-radius: inherit; background: var(--accent); }
+    .progress-fill.warn { background: var(--warning); }
+    .progress-fill.bad { background: var(--danger); }
+
+    .status-text.ok { color: var(--success); font-weight: 900; }
+    .status-text.warn { color: var(--warning); font-weight: 900; }
+    .status-text.bad { color: var(--danger); font-weight: 900; }
+
+    .alert {
+      border-radius: 14px;
+      padding: 13px 15px;
+      border: 1px solid transparent;
+      margin-bottom: 16px;
+      font-size: .9rem;
+    }
+    .alert.info { background: #e8f2f8; color: var(--primary-2); border-color: #c8deea; }
+    .alert.warning { background: var(--warning-soft); color: #854807; border-color: #f2d4ae; }
+    .alert.danger { background: var(--danger-soft); color: #8c2525; border-color: #efcaca; }
+    .alert.success { background: var(--success-soft); color: #17623f; border-color: #c5e8d5; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 24, 37, .56);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: min(560px, 100%);
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 30px 70px rgba(0,0,0,.25);
+      padding: 22px;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-head h3 { margin: 0; }
+    .modal-close { width: 36px; height: 36px; border: 0; border-radius: 10px; background: var(--surface-soft); font-size: 1.1rem; }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+    .modal-actions-right { display: flex; gap: 10px; margin-left: auto; }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: var(--primary);
+      color: white;
+      border-radius: 12px;
+      padding: 12px 15px;
+      box-shadow: 0 14px 36px rgba(0,0,0,.2);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: .22s ease;
+      z-index: 200;
+      max-width: min(400px, calc(100vw - 44px));
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1100px) {
+      .app-shell { grid-template-columns: 84px minmax(0, 1fr); }
+      .sidebar { padding: 20px 12px; align-items: center; }
+      .brand div:last-child, .nav .label, .sidebar-foot { display: none; }
+      .nav button { width: 52px; height: 48px; justify-content: center; padding: 0; }
+      .employee-card { grid-template-columns: 1fr 1fr 100px auto; }
+      .employee-card .days { grid-column: 1 / -2; }
+      .main { padding: 24px; }
+    }
+
+    @media (max-width: 760px) {
+      .app-shell { display: block; }
+      .sidebar {
+        height: auto;
+        position: sticky;
+        top: 0;
+        padding: 10px 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-mark { width: 40px; height: 40px; }
+      .nav { display: flex; overflow-x: auto; }
+      .nav button { flex: 0 0 auto; width: 44px; height: 40px; }
+      .main { padding: 18px 14px 30px; }
+      .topbar { display: block; }
+      .top-actions { justify-content: flex-start; margin-top: 14px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid > * { grid-column: auto !important; }
+      .employee-card { grid-template-columns: 1fr auto; }
+      .employee-card > * { grid-column: auto; }
+      .employee-card .days { grid-column: 1 / -1; }
+      .hours-row { grid-template-columns: 80px 55px 1fr 1fr; }
+      .hours-row .factor { grid-column: 3 / 5; }
+      .week-budget-row { grid-template-columns: 1fr 110px; }
+      .week-budget-row .capacity { grid-column: 1 / -1; text-align: left; }
+      .schedule-grid { grid-template-columns: repeat(7, 165px); }
+      .card { padding: 16px; }
+      .schedule-toolbar { align-items: stretch; }
+      .schedule-view-switch { order: 3; width: 100%; }
+      .schedule-mode-btn { flex: 1; }
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 7mm;
+    }
+
+    @media print {
+      :root { --line: #aeb7bd; }
+      html, body { width: 100%; min-height: 0; background: white !important; }
+      body { color: #111; font-family: Arial, Helvetica, sans-serif; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .sidebar,
+      .topbar,
+      .schedule-toolbar,
+      .week-tabs,
+      #scheduleNotice,
+      #weekSummary,
+      #coveragePanel,
+      .toast,
+      .modal-backdrop,
+      body > :not(.app-shell) { display: none !important; }
+      .app-shell { display: block !important; min-height: 0; }
+      .main { padding: 0 !important; }
+      .view { display: none !important; }
+      #scheduleView { display: block !important; }
+      #scheduleView > .card {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      #matrixPanel { display: block !important; }
+      .matrix-print-heading {
+        display: grid !important;
+        grid-template-columns: 1fr auto;
+        gap: 5mm;
+        align-items: end;
+        margin: 0 0 4mm;
+      }
+      .matrix-print-heading h2 { margin: 0; font-size: 15pt; }
+      .matrix-print-heading p { margin: 1mm 0 0; font-size: 8pt; }
+      .matrix-print-stats { text-align: right; white-space: nowrap; font-size: 8pt; font-weight: 700; }
+      .matrix-wrap { overflow: visible; border: 1px solid #7f898f; border-radius: 0; }
+      .schedule-matrix { min-width: 0; width: 100%; font-size: 7pt; }
+      .schedule-matrix col.name-col { width: 16%; }
+      .schedule-matrix col.day-col { width: 11%; }
+      .schedule-matrix col.total-col { width: 7%; }
+      .schedule-matrix th,
+      .schedule-matrix td {
+        height: 8.4mm;
+        padding: 1.1mm;
+        border-color: #9ba5ab;
+      }
+      .schedule-matrix thead th { height: 11mm; background: #dfe6ea !important; color: #111 !important; }
+      .schedule-matrix .matrix-day-name { font-size: 7.5pt; }
+      .schedule-matrix .matrix-day-meta { font-size: 5.5pt; color: #333; opacity: 1; }
+      .matrix-employee { background: #f2f4f5 !important; }
+      .matrix-employee-name { font-size: 7.3pt; color: #111; }
+      .matrix-employee-role { font-size: 5.5pt; color: #333; }
+      .matrix-cell { height: 6.2mm; min-height: 6.2mm; padding: .7mm; border-radius: 0; }
+      .matrix-cell.has-shift { background: #edf4f1 !important; border-color: #a9b8b4; }
+      .matrix-cell.is-unavailable,
+      .matrix-cell.is-closed { background: #eceeef !important; }
+      .matrix-shift-time { font-size: 6.4pt; }
+      .matrix-shift-meta,
+      .matrix-empty-label { font-size: 5.3pt; color: #333; }
+      .matrix-total { background: #f7f7f7 !important; }
+      .schedule-matrix tfoot th,
+      .schedule-matrix tfoot td { height: 7mm; background: #e5e9eb !important; }
+      tr, td, th { break-inside: avoid; page-break-inside: avoid; }
+    }
+
+    #globalActions { display:none; }
+    .edit-settings-grid { margin-top:18px; }
+    #scheduleWorkspace.read-only .edit-action,
+    #scheduleWorkspace.read-only .schedule-view-switch { display:none !important; }
+    #scheduleWorkspace.editing .read-action { display:none !important; }
+    #scheduleWorkspace.read-only .matrix-cell,
+    #scheduleWorkspace.read-only .shift,
+    #scheduleWorkspace.read-only .add-shift { cursor:default; }
+    #scheduleWorkspace.read-only .matrix-cell:hover:not(:disabled) { border-color:transparent; background:transparent; }
+    #scheduleWorkspace.read-only .matrix-cell.has-shift:hover { background:var(--accent-soft); border-color:#bce8e3; }
+    body.theme-navy { --primary:#24324a; --primary-2:#3c587b; --accent:#6d87ad; --accent-soft:#e7edf5; }
+    body.theme-forest { --primary:#24483d; --primary-2:#356c5a; --accent:#4f9b80; --accent-soft:#e3f2ec; }
+    body.density-compact { --radius:13px; }
+    body.density-compact .card { padding:15px; }
+    body.density-compact .schedule-matrix th, body.density-compact .schedule-matrix td { height:50px; }
+    body.density-compact .schedule-matrix thead th { height:56px; }
+    body.density-compact .matrix-cell { height:38px; min-height:38px; }
+    body.density-compact .employee-card { padding:11px 13px; }
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">WP</div>
+        <div>
+          <strong>Werkrooster</strong>
+          <span>Maandplanner</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Hoofdnavigatie">
+        <button class="active" data-view="schedule"><span class="icon">▦</span><span class="label">Rooster</span></button>
+        <button data-view="edit"><span class="icon">✎</span><span class="label">Bewerken</span></button>
+        <button data-view="employees"><span class="icon">♟</span><span class="label">Medewerkers</span></button>
+        <button data-view="store"><span class="icon">⌂</span><span class="label">Winkel</span></button>
+        <button data-view="settings"><span class="icon">⚙</span><span class="label">Instellingen</span></button>
+      </nav>
+
+      <div class="sidebar-foot">Gegevens blijven lokaal in deze browser bewaard.</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Rooster</h1>
+          <p id="pageSubtitle">Bekijk en print het definitieve weekrooster.</p>
+        </div>
+        <div class="top-actions" id="globalActions">
+          <button class="btn ghost" id="exportBtn">⇩ Exporteer CSV</button>
+        </div>
+      </header>
+
+      <section class="view" id="dashboardView">
+        <div id="dashboardAlert"></div>
+        <div class="grid-3" id="dashboardKpis"></div>
+
+        <div class="grid-2" style="margin-top:18px;">
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <h2>Verdeling deze maand</h2>
+                <div class="subtle">Gepland ten opzichte van ieders eerlijke maanddoel.</div>
+              </div>
+              <button class="btn ghost small" data-go="analysis">Details</button>
+            </div>
+            <div id="dashboardDistribution"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <div>
+                <h2>Weekbudgetten</h2>
+                <div class="subtle">Beschikbare uren vanuit de directie versus ingepland.</div>
+              </div>
+              <button class="btn ghost small" data-go="settings">Aanpassen</button>
+            </div>
+            <div id="dashboardWeeks"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="employeesView">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Medewerker toevoegen</h2>
+              <div class="subtle">Contracturen zijn het uitgangspunt; de maandverdeling wordt hierop naar rato berekend.</div>
+            </div>
+          </div>
+          <form id="employeeForm" class="form-grid">
+            <div class="field col-3">
+              <label for="employeeName">Naam</label>
+              <input id="employeeName" required placeholder="Bijv. Robin" />
+            </div>
+            <div class="field col-3">
+              <label for="employeeRole">Functie</label>
+              <input id="employeeRole" required placeholder="Bijv. verkoopmedewerker" />
+            </div>
+            <div class="field col-2">
+              <label for="employeeType">Type</label>
+              <select id="employeeType">
+                <option value="fixed">Vast</option>
+                <option value="weekend">Weekendhulp</option>
+                <option value="flex">Flex</option>
+              </select>
+            </div>
+            <div class="field col-2">
+              <label for="employeeHours">Uren per week</label>
+              <input id="employeeHours" type="number" min="1" max="60" step="0.5" value="24" required />
+            </div>
+            <button class="btn primary col-2" type="submit">+ Toevoegen</button>
+            <div class="field col-12">
+              <label>Beschikbare werkdagen</label>
+              <div class="days" id="newEmployeeDays"></div>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Medewerkers</h2>
+              <div class="subtle"><span id="employeeCount">0</span> actieve medewerkers.</div>
+            </div>
+          </div>
+          <div class="employee-list" id="employeeList"></div>
+        </section>
+      </section>
+
+      <section class="view active" id="scheduleView">
+        <div id="readScheduleHost"></div>
+        <section class="card" id="scheduleWorkspace">
+          <div class="schedule-toolbar">
+            <div class="month-switcher">
+              <button class="btn ghost small" id="prevMonth">←</button>
+              <input type="month" id="monthPickerSchedule" />
+              <button class="btn ghost small" id="nextMonth">→</button>
+            </div>
+            <div class="schedule-view-switch" aria-label="Roosterweergave">
+              <button class="schedule-mode-btn active" data-schedule-mode="matrix">Weekrooster</button>
+              <button class="schedule-mode-btn" data-schedule-mode="coverage">Dekking per dag</button>
+            </div>
+            <div class="top-actions">
+              <button class="btn ghost read-action" id="printScheduleBtn">⎙ Print A4</button>
+              <button class="btn ghost edit-action" id="clearScheduleBtn">Rooster wissen</button>
+              <button class="btn accent edit-action" id="generateBtnSchedule">✦ Automatisch verdelen</button>
+            </div>
+          </div>
+          <div class="week-tabs" id="weekTabs"></div>
+          <div id="scheduleNotice"></div>
+          <div class="week-summary" id="weekSummary"></div>
+          <div class="schedule-panel" id="matrixPanel">
+            <div class="matrix-print-heading" id="matrixPrintHeading"></div>
+            <div class="matrix-wrap">
+              <table class="schedule-matrix" id="scheduleMatrix"></table>
+            </div>
+          </div>
+          <div class="schedule-panel" id="coveragePanel" hidden>
+            <div class="schedule-grid" id="scheduleGrid"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="editView">
+        <div id="editScheduleHost"></div>
+        <div class="grid-2 edit-settings-grid">
+          <section class="card">
+            <div class="card-head"><div><h2>Planregels</h2><div class="subtle">Voorkomt korte snipperdiensten en te volle weken.</div></div></div>
+            <div class="form-grid">
+              <div class="field col-6"><label for="monthPickerSettings">Te plannen maand</label><input id="monthPickerSettings" type="month" /></div>
+              <div class="field col-3"><label for="minShift">Min. dienst</label><input id="minShift" type="number" min="1" max="10" step="0.5" /></div>
+              <div class="field col-3"><label for="maxShift">Max. dienst</label><input id="maxShift" type="number" min="2" max="12" step="0.5" /></div>
+              <div class="field col-6"><label for="maxDays">Max. werkdagen per week</label><input id="maxDays" type="number" min="1" max="7" step="1" /></div>
+              <div class="field col-6"><label for="weeklyDeviation">Max. afwijking per week</label><select id="weeklyDeviation"><option value="0.15">15%</option><option value="0.25">25%</option><option value="0.35">35%</option><option value="0.5">50%</option></select></div>
+              <div class="field col-12"><label for="rounding">Afronden op</label><select id="rounding"><option value="0.25">15 minuten</option><option value="0.5">30 minuten</option><option value="1">Hele uren</option></select></div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-head"><div><h2>Urenbudget per week</h2><div class="subtle">Beschikbare personeelsuren vanuit de directie.</div></div></div>
+            <div class="week-budget-list" id="weekBudgetList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="storeView">
+        <section class="card">
+          <div class="card-head"><div><h2>Openingstijden en drukte</h2><div class="subtle">Leg per dag vast wanneer de winkel open is en hoe zwaar die dag meetelt.</div></div></div>
+          <div id="openingHoursList"></div>
+        </section>
+      </section>
+
+      <section class="view" id="settingsView">
+        <div class="grid-2">
+          <section class="card">
+            <div class="card-head"><div><h2>Weergave</h2><div class="subtle">Pas alleen de uitstraling aan; het rooster zelf verandert niet.</div></div></div>
+            <div class="form-grid">
+              <div class="field col-12"><label for="themeSelect">Kleurthema</label><select id="themeSelect"><option value="blue">Blauwgroen</option><option value="navy">Donkerblauw</option><option value="forest">Bosgroen</option></select></div>
+              <div class="field col-12"><label for="densitySelect">Dichtheid</label><select id="densitySelect"><option value="comfortable">Ruim</option><option value="compact">Compact</option></select></div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-head"><div><h2>Over deze planner</h2><div class="subtle">Gegevens blijven lokaal in deze browser bewaard.</div></div></div>
+            <p class="subtle" style="margin:0;line-height:1.65">Gebruik <strong>Bewerken</strong> om een rooster te genereren of diensten aan te passen. De tab <strong>Rooster</strong> is bewust rustig en alleen bedoeld om te bekijken en af te drukken.</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="analysisView">
+        <div class="grid-3" id="analysisKpis"></div>
+
+        <section class="card" style="margin-top:18px;">
+          <div class="card-head">
+            <div>
+              <h2>Verdeling per medewerker</h2>
+              <div class="subtle">100% betekent dat de medewerker precies op het eerlijke, naar budget geschaalde maanddoel zit.</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Medewerker</th>
+                  <th>Contract</th>
+                  <th>Maandbasis</th>
+                  <th>Eerlijk doel</th>
+                  <th>Gepland</th>
+                  <th>Verdeling</th>
+                  <th>Afwijking</th>
+                </tr>
+              </thead>
+              <tbody id="analysisEmployeeRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2>Controle per week</h2>
+              <div class="subtle">Hier zie je direct welke weken onder- of overpland zijn.</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Budget</th>
+                  <th>Gepland</th>
+                  <th>Verschil</th>
+                  <th>Benutting</th>
+                </tr>
+              </thead>
+              <tbody id="analysisWeekRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="employeeModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="employeeModalTitle">
+      <div class="modal-head">
+        <h3 id="employeeModalTitle">Medewerker aanpassen</h3>
+        <button class="modal-close" data-close-modal="employeeModal">×</button>
+      </div>
+      <form id="employeeEditForm" class="form-grid">
+        <input type="hidden" id="editEmployeeId" />
+        <div class="field col-6">
+          <label for="editEmployeeName">Naam</label>
+          <input id="editEmployeeName" required />
+        </div>
+        <div class="field col-6">
+          <label for="editEmployeeRole">Functie</label>
+          <input id="editEmployeeRole" required />
+        </div>
+        <div class="field col-6">
+          <label for="editEmployeeType">Type</label>
+          <select id="editEmployeeType">
+            <option value="fixed">Vast</option>
+            <option value="weekend">Weekendhulp</option>
+            <option value="flex">Flex</option>
+          </select>
+        </div>
+        <div class="field col-6">
+          <label for="editEmployeeHours">Uren per week</label>
+          <input id="editEmployeeHours" type="number" min="1" max="60" step="0.5" required />
+        </div>
+        <div class="field col-12">
+          <label>Beschikbare werkdagen</label>
+          <div class="days" id="editEmployeeDays"></div>
+        </div>
+        <div class="modal-actions col-12">
+          <button type="button" class="btn danger" id="deleteEmployeeBtn">Verwijderen</button>
+          <div class="modal-actions-right">
+            <button type="button" class="btn ghost" data-close-modal="employeeModal">Annuleren</button>
+            <button type="submit" class="btn primary">Opslaan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="shiftModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shiftModalTitle">
+      <div class="modal-head">
+        <h3 id="shiftModalTitle">Dienst toevoegen</h3>
+        <button class="modal-close" data-close-modal="shiftModal">×</button>
+      </div>
+      <form id="shiftForm" class="form-grid">
+        <input type="hidden" id="shiftId" />
+        <div class="field col-12">
+          <label for="shiftDate">Datum</label>
+          <input id="shiftDate" type="date" required />
+        </div>
+        <div class="field col-12">
+          <label for="shiftEmployee">Medewerker</label>
+          <select id="shiftEmployee" required></select>
+        </div>
+        <div class="field col-6">
+          <label for="shiftStart">Start</label>
+          <input id="shiftStart" type="time" step="900" required />
+        </div>
+        <div class="field col-6">
+          <label for="shiftEnd">Einde</label>
+          <input id="shiftEnd" type="time" step="900" required />
+        </div>
+        <div class="modal-actions col-12">
+          <button type="button" class="btn danger" id="deleteShiftBtn">Verwijderen</button>
+          <div class="modal-actions-right">
+            <button type="button" class="btn ghost" data-close-modal="shiftModal">Annuleren</button>
+            <button type="submit" class="btn primary">Opslaan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE_KEY = 'werkrooster-planner-v1';
+      const dayNames = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+      const dayShort = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+
+      const defaultState = {
+        month: new Date().toISOString().slice(0, 7),
+        employees: [
+          { id: uid(), name: 'Samira', role: 'Filiaalverantwoordelijke', type: 'fixed', weeklyHours: 32, availability: [1,1,1,1,1,0,0], active: true },
+          { id: uid(), name: 'Daan', role: 'Verkoopmedewerker', type: 'fixed', weeklyHours: 28, availability: [1,1,1,1,1,1,0], active: true },
+          { id: uid(), name: 'Noor', role: 'Verkoopmedewerker', type: 'fixed', weeklyHours: 24, availability: [1,1,1,1,1,1,0], active: true },
+          { id: uid(), name: 'Finn', role: 'Weekendhulp', type: 'weekend', weeklyHours: 8, availability: [0,0,0,0,0,1,1], active: true },
+          { id: uid(), name: 'Mila', role: 'Weekendhulp', type: 'weekend', weeklyHours: 6, availability: [0,0,0,0,0,1,1], active: true }
+        ],
+        settings: {
+          minShift: 4,
+          maxShift: 8,
+          maxDays: 5,
+          weeklyDeviation: 0.35,
+          rounding: 0.5,
+          theme: 'blue',
+          density: 'comfortable',
+          openingHours: [
+            { open: true, start: '09:00', end: '18:00', factor: 0.85 },
+            { open: true, start: '09:00', end: '18:00', factor: 0.9 },
+            { open: true, start: '09:00', end: '18:00', factor: 1 },
+            { open: true, start: '09:00', end: '21:00', factor: 1.15 },
+            { open: true, start: '09:00', end: '21:00', factor: 1.35 },
+            { open: true, start: '09:00', end: '17:00', factor: 1.45 },
+            { open: false, start: '12:00', end: '17:00', factor: 0.7 }
+          ]
+        },
+        weeklyBudgets: {},
+        shifts: []
+      };
+
+      let state = loadState();
+      let activeView = 'schedule';
+      let activeWeekKey = null;
+      let activeScheduleMode = 'matrix';
+      let toastTimer = null;
+
+      const el = id => document.getElementById(id);
+
+      function uid() {
+        return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return structuredClone(defaultState);
+          const parsed = JSON.parse(raw);
+          return normalizeState(parsed);
+        } catch (error) {
+          console.warn('Kon opgeslagen gegevens niet laden:', error);
+          return structuredClone(defaultState);
+        }
+      }
+
+      function normalizeState(value) {
+        const next = structuredClone(defaultState);
+        if (!value || typeof value !== 'object') return next;
+        next.month = /^\d{4}-\d{2}$/.test(value.month || '') ? value.month : next.month;
+        next.employees = Array.isArray(value.employees) ? value.employees.map(emp => ({
+          id: emp.id || uid(),
+          name: String(emp.name || 'Naamloos'),
+          role: String(emp.role || 'Medewerker'),
+          type: ['fixed','weekend','flex'].includes(emp.type) ? emp.type : 'fixed',
+          weeklyHours: clampNumber(emp.weeklyHours, 1, 60, 24),
+          availability: Array.isArray(emp.availability) && emp.availability.length === 7 ? emp.availability.map(Boolean) : [1,1,1,1,1,0,0],
+          active: emp.active !== false
+        })) : next.employees;
+        next.settings = { ...next.settings, ...(value.settings || {}) };
+        next.settings.openingHours = Array.isArray(value.settings?.openingHours) && value.settings.openingHours.length === 7
+          ? value.settings.openingHours.map((day, index) => ({ ...next.settings.openingHours[index], ...day }))
+          : next.settings.openingHours;
+        next.weeklyBudgets = value.weeklyBudgets && typeof value.weeklyBudgets === 'object' ? value.weeklyBudgets : {};
+        next.shifts = Array.isArray(value.shifts) ? value.shifts.filter(shift => shift && shift.date && shift.employeeId).map(shift => ({
+          id: shift.id || uid(),
+          date: shift.date,
+          employeeId: shift.employeeId,
+          start: shift.start,
+          end: shift.end
+        })) : [];
+        return next;
+      }
+
+      function clampNumber(value, min, max, fallback) {
+        const number = Number(value);
+        return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
+      }
+
+      function saveState(render = true) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (error) {
+          console.warn('Opslaan in deze browser is niet beschikbaar:', error);
+        }
+        if (render) renderAll();
+      }
+
+      function parseMonth(month) {
+        const [year, monthNumber] = month.split('-').map(Number);
+        return { year, monthIndex: monthNumber - 1 };
+      }
+
+      function dateKey(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function startOfWeek(date) {
+        const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const day = (copy.getDay() + 6) % 7;
+        copy.setDate(copy.getDate() - day);
+        return copy;
+      }
+
+      function addDays(date, amount) {
+        const copy = new Date(date);
+        copy.setDate(copy.getDate() + amount);
+        return copy;
+      }
+
+      function getMonthWeeks(month = state.month) {
+        const { year, monthIndex } = parseMonth(month);
+        const first = new Date(year, monthIndex, 1);
+        const last = new Date(year, monthIndex + 1, 0);
+        let cursor = startOfWeek(first);
+        const weeks = [];
+        while (cursor <= last) {
+          const start = new Date(cursor);
+          const end = addDays(start, 6);
+          const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+          weeks.push({ key: dateKey(start), start, end, days });
+          cursor = addDays(cursor, 7);
+        }
+        return weeks;
+      }
+
+      function monthDaysCount(month = state.month) {
+        const { year, monthIndex } = parseMonth(month);
+        return new Date(year, monthIndex + 1, 0).getDate();
+      }
+
+      function formatDate(date, options = {}) {
+        return new Intl.DateTimeFormat('nl-NL', options).format(date);
+      }
+
+      function formatWeekLabel(week) {
+        return `${formatDate(week.start, { day: 'numeric', month: 'short' })} – ${formatDate(week.end, { day: 'numeric', month: 'short' })}`;
+      }
+
+      function getWeekNumber(date) {
+        const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNr = target.getUTCDay() || 7;
+        target.setUTCDate(target.getUTCDate() + 4 - dayNr);
+        const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+        return Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+      }
+
+      function timeToHours(time) {
+        const [h, m] = String(time || '00:00').split(':').map(Number);
+        return h + (m || 0) / 60;
+      }
+
+      function hoursToTime(hours) {
+        const normalized = Math.max(0, Math.min(24, hours));
+        let h = Math.floor(normalized);
+        let m = Math.round((normalized - h) * 60);
+        if (m === 60) { h += 1; m = 0; }
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      }
+
+      function duration(start, end) {
+        return Math.max(0, timeToHours(end) - timeToHours(start));
+      }
+
+      function roundHours(value) {
+        const unit = Number(state.settings.rounding) || 0.5;
+        return Math.round(value / unit) * unit;
+      }
+
+      function formatHours(value) {
+        const number = Number(value) || 0;
+        return `${number.toLocaleString('nl-NL', { minimumFractionDigits: number % 1 ? 1 : 0, maximumFractionDigits: 2 })} u`;
+      }
+
+      function getActiveEmployees() {
+        return state.employees.filter(emp => emp.active);
+      }
+
+      function monthlyBaseTarget(employee) {
+        return employee.weeklyHours * 52 / 12;
+      }
+
+      function totalMonthlyBase() {
+        return getActiveEmployees().reduce((sum, emp) => sum + monthlyBaseTarget(emp), 0);
+      }
+
+      function totalBudget() {
+        return getMonthWeeks().reduce((sum, week) => sum + getWeekBudget(week.key), 0);
+      }
+
+      function fairTarget(employee) {
+        const baseTotal = totalMonthlyBase();
+        if (!baseTotal) return 0;
+        return totalBudget() * (monthlyBaseTarget(employee) / baseTotal);
+      }
+
+      function shiftsInMonth() {
+        return state.shifts.filter(shift => shift.date.startsWith(state.month));
+      }
+
+      function shiftHours(shift) {
+        return roundHours(duration(shift.start, shift.end));
+      }
+
+      function plannedForEmployee(employeeId, weekKey = null) {
+        return state.shifts.reduce((sum, shift) => {
+          if (shift.employeeId !== employeeId) return sum;
+          if (!shift.date.startsWith(state.month)) return sum;
+          if (weekKey && dateKey(startOfWeek(new Date(`${shift.date}T12:00:00`))) !== weekKey) return sum;
+          return sum + shiftHours(shift);
+        }, 0);
+      }
+
+      function plannedForWeek(weekKey) {
+        return state.shifts.reduce((sum, shift) => {
+          if (!shift.date.startsWith(state.month)) return sum;
+          const key = dateKey(startOfWeek(new Date(`${shift.date}T12:00:00`)));
+          return key === weekKey ? sum + shiftHours(shift) : sum;
+        }, 0);
+      }
+
+      function plannedForDate(date) {
+        const key = typeof date === 'string' ? date : dateKey(date);
+        return state.shifts.reduce((sum, shift) => shift.date === key ? sum + shiftHours(shift) : sum, 0);
+      }
+
+      function getWeekBudget(weekKey) {
+        const value = Number(state.weeklyBudgets[`${state.month}:${weekKey}`]);
+        const week = getMonthWeeks().find(item => item.key === weekKey);
+        return Number.isFinite(value) ? value : defaultWeekBudget(week);
+      }
+
+      function defaultWeekBudget(week = null) {
+        const weekly = getActiveEmployees().reduce((sum, emp) => sum + emp.weeklyHours, 0);
+        if (!week) return roundHours(weekly);
+        const { monthIndex } = parseMonth(state.month);
+        let fullWeight = 0;
+        let monthWeight = 0;
+        week.days.forEach((date, dayIndex) => {
+          const opening = state.settings.openingHours[dayIndex];
+          if (!opening.open) return;
+          const weight = duration(opening.start, opening.end) * Math.max(0.1, Number(opening.factor) || 1);
+          fullWeight += weight;
+          if (date.getMonth() === monthIndex) monthWeight += weight;
+        });
+        return roundHours(fullWeight ? weekly * monthWeight / fullWeight : 0);
+      }
+
+      function setWeekBudget(weekKey, value) {
+        state.weeklyBudgets[`${state.month}:${weekKey}`] = Math.max(0, Number(value) || 0);
+      }
+
+      function isEmployeeAvailable(emp, dayIndex) {
+        if (!emp.active || !emp.availability?.[dayIndex]) return false;
+        if (emp.type === 'weekend' && dayIndex < 5) return false;
+        return true;
+      }
+
+      function remainingOpenOpportunities(emp, fromDate) {
+        const { year, monthIndex } = parseMonth(state.month);
+        const last = new Date(year, monthIndex + 1, 0);
+        let cursor = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+        let count = 0;
+        while (cursor <= last) {
+          const dayIndex = (cursor.getDay() + 6) % 7;
+          const opening = state.settings.openingHours[dayIndex];
+          if (opening.open && isEmployeeAvailable(emp, dayIndex)) count += 1;
+          cursor = addDays(cursor, 1);
+        }
+        return Math.max(1, count);
+      }
+
+      function typeLabel(type) {
+        return type === 'weekend' ? 'Weekendhulp' : type === 'flex' ? 'Flex' : 'Vast';
+      }
+
+      function renderDayPicker(container, values, onChange) {
+        container.innerHTML = '';
+        dayShort.forEach((day, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `day-pill ${values[index] ? 'on' : ''}`;
+          button.textContent = day;
+          button.addEventListener('click', () => {
+            values[index] = values[index] ? 0 : 1;
+            button.classList.toggle('on', Boolean(values[index]));
+            onChange?.(values);
+          });
+          container.appendChild(button);
+        });
+      }
+
+      function switchView(view) {
+        activeView = view;
+        document.querySelectorAll('.view').forEach(section => section.classList.remove('active'));
+        document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.view === view));
+        const target = el(`${view}View`);
+        if (target) target.classList.add('active');
+        const workspace = el('scheduleWorkspace');
+        if (view === 'schedule') {
+          el('readScheduleHost').appendChild(workspace);
+          workspace.classList.add('read-only');
+          workspace.classList.remove('editing');
+          setScheduleMode('matrix');
+        } else if (view === 'edit') {
+          el('editScheduleHost').appendChild(workspace);
+          workspace.classList.add('editing');
+          workspace.classList.remove('read-only');
+        }
+        const titles = {
+          schedule: ['Rooster', 'Bekijk en print het definitieve weekrooster.'],
+          edit: ['Bewerken', 'Genereer het rooster en pas afzonderlijke diensten aan.'],
+          employees: ['Medewerkers', 'Beheer functies, contracturen en beschikbaarheid.'],
+          store: ['Winkel', 'Beheer openingstijden, sluitingsdagen en drukte per dag.'],
+          settings: ['Instellingen', 'Pas kleur en weergave van de planner aan.']
+        };
+        const title = titles[view] || ['Werkrooster',''];
+        el('pageTitle').textContent = title[0];
+        el('pageSubtitle').textContent = title[1];
+        renderAll();
+      }
+
+      function renderAll() {
+        ensureWeekBudgets();
+        el('monthPickerSettings').value = state.month;
+        el('monthPickerSchedule').value = state.month;
+        renderEmployees();
+        renderSettings();
+        renderSchedule();
+        renderAnalysis();
+        renderDashboard();
+        applyAppearance();
+      }
+
+      function ensureWeekBudgets() {
+        getMonthWeeks().forEach(week => {
+          const key = `${state.month}:${week.key}`;
+          if (!(key in state.weeklyBudgets)) state.weeklyBudgets[key] = defaultWeekBudget(week);
+        });
+      }
+
+      function renderEmployees() {
+        const list = el('employeeList');
+        const employees = getActiveEmployees();
+        el('employeeCount').textContent = employees.length;
+        list.innerHTML = '';
+        if (!employees.length) {
+          list.innerHTML = '<div class="alert warning">Voeg minimaal één medewerker toe om een rooster te kunnen maken.</div>';
+          return;
+        }
+
+        employees.forEach(emp => {
+          const card = document.createElement('div');
+          card.className = 'employee-card';
+          card.innerHTML = `
+            <div class="employee-name"><strong>${escapeHtml(emp.name)}</strong><span>${escapeHtml(emp.role)}</span></div>
+            <span class="badge ${emp.type === 'weekend' ? 'weekend' : 'fixed'}">${typeLabel(emp.type)}</span>
+            <strong>${formatHours(emp.weeklyHours)}</strong>
+            <span class="subtle">± ${formatHours(monthlyBaseTarget(emp))}/mnd</span>
+            <div class="days">${dayShort.map((day, index) => `<span class="day-pill ${emp.availability[index] ? 'on' : ''}">${day}</span>`).join('')}</div>
+            <button class="btn ghost small" data-edit-employee="${emp.id}">Wijzig</button>
+          `;
+          list.appendChild(card);
+        });
+      }
+
+      function applyAppearance() {
+        const theme = ['blue','navy','forest'].includes(state.settings.theme) ? state.settings.theme : 'blue';
+        const density = state.settings.density === 'compact' ? 'compact' : 'comfortable';
+        document.body.classList.remove('theme-navy','theme-forest','density-compact');
+        if (theme !== 'blue') document.body.classList.add(`theme-${theme}`);
+        if (density === 'compact') document.body.classList.add('density-compact');
+        if (el('themeSelect')) el('themeSelect').value = theme;
+        if (el('densitySelect')) el('densitySelect').value = density;
+      }
+
+      function renderSettings() {
+        el('minShift').value = state.settings.minShift;
+        el('maxShift').value = state.settings.maxShift;
+        el('maxDays').value = state.settings.maxDays;
+        el('weeklyDeviation').value = String(state.settings.weeklyDeviation);
+        el('rounding').value = String(state.settings.rounding);
+
+        const hoursList = el('openingHoursList');
+        hoursList.innerHTML = '';
+        state.settings.openingHours.forEach((day, index) => {
+          const row = document.createElement('div');
+          row.className = 'hours-row';
+          row.innerHTML = `
+            <strong>${dayNames[index]}</strong>
+            <select data-opening="${index}" data-field="open">
+              <option value="true" ${day.open ? 'selected' : ''}>Open</option>
+              <option value="false" ${!day.open ? 'selected' : ''}>Dicht</option>
+            </select>
+            <input type="time" value="${day.start}" data-opening="${index}" data-field="start" ${day.open ? '' : 'disabled'} />
+            <input type="time" value="${day.end}" data-opening="${index}" data-field="end" ${day.open ? '' : 'disabled'} />
+            <div class="field factor">
+              <label>Druktefactor</label>
+              <input type="number" min="0.1" max="3" step="0.05" value="${day.factor}" data-opening="${index}" data-field="factor" ${day.open ? '' : 'disabled'} />
+            </div>
+          `;
+          hoursList.appendChild(row);
+        });
+
+        const budgetList = el('weekBudgetList');
+        budgetList.innerHTML = '';
+        getMonthWeeks().forEach(week => {
+          const budget = getWeekBudget(week.key);
+          const planned = plannedForWeek(week.key);
+          const row = document.createElement('div');
+          row.className = 'week-budget-row';
+          row.innerHTML = `
+            <div><strong>Week ${getWeekNumber(week.start)}</strong><div class="subtle">${formatWeekLabel(week)}</div></div>
+            <input type="number" min="0" max="1000" step="0.5" value="${budget}" data-week-budget="${week.key}" aria-label="Budget week ${getWeekNumber(week.start)}" />
+            <div class="capacity">Ingepland: <strong>${formatHours(planned)}</strong></div>
+          `;
+          budgetList.appendChild(row);
+        });
+      }
+
+      function setScheduleMode(mode) {
+        activeScheduleMode = mode === 'coverage' ? 'coverage' : 'matrix';
+        document.querySelectorAll('[data-schedule-mode]').forEach(button => {
+          button.classList.toggle('active', button.dataset.scheduleMode === activeScheduleMode);
+        });
+        el('matrixPanel').hidden = activeScheduleMode !== 'matrix';
+        el('coveragePanel').hidden = activeScheduleMode !== 'coverage';
+      }
+
+      function renderSchedule() {
+        const weeks = getMonthWeeks();
+        if (!activeWeekKey || !weeks.some(week => week.key === activeWeekKey)) activeWeekKey = weeks[0]?.key || null;
+        const tabs = el('weekTabs');
+        tabs.innerHTML = weeks.map(week => `<button class="week-tab ${week.key === activeWeekKey ? 'active' : ''}" data-week-tab="${week.key}">Week ${getWeekNumber(week.start)} · ${formatDate(week.start, { day:'numeric', month:'short' })}</button>`).join('');
+
+        const week = weeks.find(item => item.key === activeWeekKey);
+        const grid = el('scheduleGrid');
+        const matrix = el('scheduleMatrix');
+        const summary = el('weekSummary');
+        const notice = el('scheduleNotice');
+        if (!week) {
+          grid.innerHTML = '';
+          matrix.innerHTML = '';
+          summary.innerHTML = '';
+          return;
+        }
+
+        const budget = getWeekBudget(week.key);
+        const planned = plannedForWeek(week.key);
+        const diff = roundHours(planned - budget);
+        summary.innerHTML = `
+          <span class="summary-chip">Budget ${formatHours(budget)}</span>
+          <span class="summary-chip">Gepland ${formatHours(planned)}</span>
+          <span class="summary-chip ${Math.abs(diff) <= 0.5 ? 'ok' : diff > 0 ? 'bad' : 'warn'}">${diff > 0 ? '+' : ''}${formatHours(diff)} verschil</span>
+          <span class="summary-chip">${week.days.filter(day => day.getMonth() === parseMonth(state.month).monthIndex).length} dagen in deze maand</span>
+        `;
+
+        el('matrixPrintHeading').innerHTML = `
+          <div>
+            <h2>Weekrooster · week ${getWeekNumber(week.start)}</h2>
+            <p>${formatWeekLabel(week)} · ${new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric' }).format(week.start)}</p>
+          </div>
+          <div class="matrix-print-stats">Urenbudget ${formatHours(budget)} · gepland ${formatHours(planned)} · verschil ${diff > 0 ? '+' : ''}${formatHours(diff)}</div>
+        `;
+
+        const invalidShifts = state.shifts.filter(shift => shift.date.startsWith(state.month) && !state.employees.some(emp => emp.id === shift.employeeId));
+        if (invalidShifts.length) {
+          notice.innerHTML = '<div class="alert warning">Er staan diensten van verwijderde medewerkers in het rooster. Verwijder of pas deze diensten handmatig aan.</div>';
+        } else if (!state.shifts.some(shift => shift.date.startsWith(state.month))) {
+          notice.innerHTML = '<div class="alert info">Nog geen rooster voor deze maand. Gebruik “Automatisch verdelen” en pas daarna losse diensten handmatig aan.</div>';
+        } else {
+          notice.innerHTML = '';
+        }
+
+        renderScheduleMatrix(week);
+        renderCoverageGrid(week);
+        setScheduleMode(activeScheduleMode);
+      }
+
+      function renderScheduleMatrix(week) {
+        const matrix = el('scheduleMatrix');
+        const employees = getActiveEmployees();
+        const { monthIndex } = parseMonth(state.month);
+        const dayHeaders = week.days.map((date, dayIndex) => {
+          const opening = state.settings.openingHours[dayIndex];
+          const meta = `${formatDate(date, { day:'numeric', month:'short' })} · ${opening.open ? `${opening.start}–${opening.end}` : 'gesloten'}`;
+          return `<th title="${escapeHtml(dayNames[dayIndex])} · ${escapeHtml(meta)}"><span class="matrix-day-name">${dayNames[dayIndex]}</span><span class="matrix-day-meta">${escapeHtml(meta)}</span></th>`;
+        }).join('');
+
+        const rows = employees.map(emp => {
+          const cells = week.days.map((date, dayIndex) => {
+            const key = dateKey(date);
+            const opening = state.settings.openingHours[dayIndex];
+            const shifts = state.shifts
+              .filter(shift => shift.date === key && shift.employeeId === emp.id)
+              .sort((a, b) => a.start.localeCompare(b.start));
+            const outside = date.getMonth() !== monthIndex;
+            const available = isEmployeeAvailable(emp, dayIndex);
+            if (shifts.length) {
+              const first = shifts[0];
+              const timeLabel = shifts.map(shift => `${shift.start}–${shift.end}`).join(' / ');
+              const total = shifts.reduce((sum, shift) => sum + shiftHours(shift), 0);
+              const extra = shifts.length > 1 ? ` · +${shifts.length - 1} dienst` : '';
+              return `<td><button class="matrix-cell has-shift ${outside ? 'is-outside' : ''}" data-edit-shift="${first.id}" title="${escapeHtml(emp.name)} · ${escapeHtml(timeLabel)}"><span class="matrix-shift-time">${escapeHtml(timeLabel)}</span><span class="matrix-shift-meta">${formatHours(total)}${extra}</span></button></td>`;
+            }
+            if (!opening.open) return '<td><button class="matrix-cell is-closed" disabled><span class="matrix-empty-label">Gesloten</span></button></td>';
+            if (!available) return '<td><button class="matrix-cell is-unavailable" disabled><span class="matrix-empty-label">Niet beschikbaar</span></button></td>';
+            return `<td><button class="matrix-cell is-free ${outside ? 'is-outside' : ''}" data-add-shift="${key}" data-employee-id="${emp.id}" title="Dienst toevoegen voor ${escapeHtml(emp.name)}"><span class="matrix-empty-label">Vrij</span></button></td>`;
+          }).join('');
+          const employeeTotal = week.days.reduce((sum, date) => sum + state.shifts
+            .filter(shift => shift.date === dateKey(date) && shift.employeeId === emp.id)
+            .reduce((sub, shift) => sub + shiftHours(shift), 0), 0);
+          return `<tr>
+            <th class="matrix-employee" title="${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}"><span class="matrix-employee-name">${escapeHtml(emp.name)}</span><span class="matrix-employee-role">${escapeHtml(emp.role)} · ${typeLabel(emp.type)}</span></th>
+            ${cells}
+            <td class="matrix-total">${formatHours(employeeTotal)}</td>
+          </tr>`;
+        }).join('');
+
+        const dailyTotals = week.days.map(date => `<td>${formatHours(plannedForDate(dateKey(date)))}</td>`).join('');
+        matrix.innerHTML = `
+          <colgroup><col class="name-col">${week.days.map(() => '<col class="day-col">').join('')}<col class="total-col"></colgroup>
+          <thead><tr><th>Medewerker</th>${dayHeaders}<th>Totaal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="9">Nog geen medewerkers.</td></tr>'}</tbody>
+          <tfoot><tr><th>Dagtotaal</th>${dailyTotals}<td>${formatHours(plannedForWeek(week.key))}</td></tr></tfoot>
+        `;
+      }
+
+      function renderCoverageGrid(week) {
+        const grid = el('scheduleGrid');
+        grid.innerHTML = '';
+        const { monthIndex } = parseMonth(state.month);
+        week.days.forEach((date, dayIndex) => {
+          const key = dateKey(date);
+          const opening = state.settings.openingHours[dayIndex];
+          const shifts = state.shifts
+            .filter(shift => shift.date === key)
+            .sort((a, b) => a.start.localeCompare(b.start));
+          const column = document.createElement('div');
+          column.className = `day-column ${date.getMonth() !== monthIndex ? 'outside' : ''}`;
+          column.innerHTML = `
+            <div class="day-head">
+              <div><strong>${dayNames[dayIndex]}</strong><span>${formatDate(date, { day:'numeric', month:'short' })} · ${opening.open ? `${opening.start}–${opening.end}` : 'gesloten'}</span></div>
+              <div class="day-total">${formatHours(plannedForDate(key))}</div>
+            </div>
+            <div class="shifts">
+              ${shifts.length ? shifts.map(shift => renderShiftCard(shift)).join('') : `<div class="empty-day">${opening.open ? 'Nog niemand ingepland' : 'Winkel gesloten'}</div>`}
+            </div>
+            ${opening.open && date.getMonth() === monthIndex ? `<button class="add-shift" data-add-shift="${key}">+ Dienst toevoegen</button>` : ''}
+          `;
+          grid.appendChild(column);
+        });
+      }
+
+      function renderShiftCard(shift) {
+        const emp = state.employees.find(item => item.id === shift.employeeId);
+        return `
+          <div class="shift" title="${escapeHtml(emp?.name || 'Onbekend')} · ${shift.start}–${shift.end} · ${escapeHtml(emp?.role || 'Medewerker')}">
+            <button class="edit-shift" data-edit-shift="${shift.id}" aria-label="Dienst wijzigen">⋯</button>
+            <strong>${escapeHtml(emp?.name || 'Onbekend')}</strong>
+            <span>${shift.start}–${shift.end} · ${formatHours(shiftHours(shift))}</span>
+            <div class="shift-role">${escapeHtml(emp?.role || 'Medewerker')}</div>
+          </div>
+        `;
+      }
+
+      function renderAnalysis() {
+        const budget = totalBudget();
+        const planned = shiftsInMonth().reduce((sum, shift) => sum + shiftHours(shift), 0);
+        const utilization = budget ? planned / budget * 100 : 0;
+        const fairness = calculateFairnessScore();
+        el('analysisKpis').innerHTML = `
+          ${kpiHtml('Maandbudget', formatHours(budget), `${getMonthWeeks().length} kalenderweken`)}
+          ${kpiHtml('Ingepland', formatHours(planned), `${utilization.toFixed(1)}% benut`)}
+          ${kpiHtml('Eerlijkheidsscore', `${fairness.toFixed(0)}%`, '100% = vrijwel gelijke doelrealisatie')}
+        `;
+
+        const rows = el('analysisEmployeeRows');
+        const employees = getActiveEmployees();
+        rows.innerHTML = employees.map(emp => {
+          const base = monthlyBaseTarget(emp);
+          const target = fairTarget(emp);
+          const employeePlanned = plannedForEmployee(emp.id);
+          const percent = target ? employeePlanned / target * 100 : 0;
+          const diff = employeePlanned - target;
+          const status = Math.abs(diff) <= Math.max(1, target * .05) ? 'ok' : Math.abs(diff) <= Math.max(2, target * .12) ? 'warn' : 'bad';
+          return `
+            <tr>
+              <td><strong>${escapeHtml(emp.name)}</strong><div class="subtle">${escapeHtml(emp.role)}</div></td>
+              <td>${formatHours(emp.weeklyHours)}/wk</td>
+              <td>${formatHours(base)}</td>
+              <td>${formatHours(target)}</td>
+              <td><strong>${formatHours(employeePlanned)}</strong></td>
+              <td>
+                <div class="progress-track"><div class="progress-fill ${status === 'ok' ? '' : status}" style="width:${Math.min(125, percent)}%"></div></div>
+                <div class="subtle">${percent.toFixed(1)}%</div>
+              </td>
+              <td class="status-text ${status}">${diff > 0 ? '+' : ''}${formatHours(diff)}</td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="7">Nog geen medewerkers.</td></tr>';
+
+        el('analysisWeekRows').innerHTML = getMonthWeeks().map(week => {
+          const weekBudget = getWeekBudget(week.key);
+          const weekPlanned = plannedForWeek(week.key);
+          const diff = weekPlanned - weekBudget;
+          const utilizationWeek = weekBudget ? weekPlanned / weekBudget * 100 : 0;
+          const status = Math.abs(diff) <= .5 ? 'ok' : diff > 0 ? 'bad' : 'warn';
+          return `
+            <tr>
+              <td><strong>Week ${getWeekNumber(week.start)}</strong><div class="subtle">${formatWeekLabel(week)}</div></td>
+              <td>${formatHours(weekBudget)}</td>
+              <td>${formatHours(weekPlanned)}</td>
+              <td class="status-text ${status}">${diff > 0 ? '+' : ''}${formatHours(diff)}</td>
+              <td>${utilizationWeek.toFixed(1)}%</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderDashboard() {
+        const employees = getActiveEmployees();
+        const budget = totalBudget();
+        const planned = shiftsInMonth().reduce((sum, shift) => sum + shiftHours(shift), 0);
+        const fairness = calculateFairnessScore();
+        el('dashboardKpis').innerHTML = `
+          ${kpiHtml('Actieve medewerkers', employees.length, `${employees.filter(emp => emp.type === 'weekend').length} weekendhulpen`)}
+          ${kpiHtml('Beschikbare uren', formatHours(budget), `${getMonthWeeks().length} weken in de maandweergave`)}
+          ${kpiHtml('Eerlijkheidsscore', `${fairness.toFixed(0)}%`, planned ? `${formatHours(planned)} ingepland` : 'Nog geen rooster')}
+        `;
+
+        const alert = el('dashboardAlert');
+        if (!employees.length) {
+          alert.innerHTML = '<div class="alert warning">Voeg eerst medewerkers toe.</div>';
+        } else if (!state.shifts.some(shift => shift.date.startsWith(state.month))) {
+          alert.innerHTML = '<div class="alert info">Alles staat klaar. Controleer de weekbudgetten en genereer daarna het maandrooster.</div>';
+        } else {
+          const diff = planned - budget;
+          alert.innerHTML = Math.abs(diff) <= 1
+            ? '<div class="alert success">Het maandrooster sluit vrijwel exact aan op het beschikbare urenbudget.</div>'
+            : `<div class="alert ${diff > 0 ? 'danger' : 'warning'}">Het rooster is ${formatHours(Math.abs(diff))} ${diff > 0 ? 'over' : 'onder'} het maandbudget.</div>`;
+        }
+
+        el('dashboardDistribution').innerHTML = employees.map(emp => {
+          const target = fairTarget(emp);
+          const plannedEmp = plannedForEmployee(emp.id);
+          const percent = target ? plannedEmp / target * 100 : 0;
+          const status = Math.abs(percent - 100) <= 6 ? '' : Math.abs(percent - 100) <= 15 ? 'warn' : 'bad';
+          return `
+            <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(120px,1.3fr) 70px;gap:10px;align-items:center;margin:11px 0;">
+              <div><strong>${escapeHtml(emp.name)}</strong><div class="subtle">${formatHours(plannedEmp)} / ${formatHours(target)}</div></div>
+              <div class="progress-track"><div class="progress-fill ${status}" style="width:${Math.min(125, percent)}%"></div></div>
+              <strong>${percent.toFixed(0)}%</strong>
+            </div>
+          `;
+        }).join('') || '<div class="subtle">Nog geen medewerkers.</div>';
+
+        el('dashboardWeeks').innerHTML = getMonthWeeks().map(week => {
+          const weekBudget = getWeekBudget(week.key);
+          const weekPlanned = plannedForWeek(week.key);
+          const diff = weekPlanned - weekBudget;
+          const status = Math.abs(diff) <= .5 ? 'ok' : diff > 0 ? 'bad' : 'warn';
+          return `
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);">
+              <div><strong>Week ${getWeekNumber(week.start)}</strong><div class="subtle">${formatWeekLabel(week)}</div></div>
+              <div style="text-align:right;"><strong>${formatHours(weekPlanned)} / ${formatHours(weekBudget)}</strong><div class="status-text ${status}" style="font-size:.75rem;">${diff > 0 ? '+' : ''}${formatHours(diff)}</div></div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function kpiHtml(label, value, meta) {
+        return `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="meta">${meta}</div></div>`;
+      }
+
+      function calculateFairnessScore() {
+        const employees = getActiveEmployees();
+        if (!employees.length) return 100;
+        const ratios = employees.map(emp => {
+          const target = fairTarget(emp);
+          return target ? plannedForEmployee(emp.id) / target : 1;
+        });
+        if (!state.shifts.some(shift => shift.date.startsWith(state.month))) return 0;
+        const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+        const variance = ratios.reduce((sum, ratio) => sum + Math.pow(ratio - mean, 2), 0) / ratios.length;
+        const spreadPenalty = Math.sqrt(variance) * 100;
+        const completionPenalty = Math.abs(1 - mean) * 45;
+        return Math.max(0, Math.min(100, 100 - spreadPenalty - completionPenalty));
+      }
+
+      function generateSchedule() {
+        const employees = getActiveEmployees();
+        if (!employees.length) {
+          toast('Voeg eerst medewerkers toe.');
+          switchView('employees');
+          return;
+        }
+
+        const previousOtherMonths = state.shifts.filter(shift => !shift.date.startsWith(state.month));
+        const generated = [];
+        const monthsTargets = Object.fromEntries(employees.map(emp => [emp.id, fairTarget(emp)]));
+        const monthAssigned = Object.fromEntries(employees.map(emp => [emp.id, 0]));
+        const warnings = [];
+        const weeks = getMonthWeeks();
+        const { monthIndex } = parseMonth(state.month);
+
+        weeks.forEach(week => {
+          const budget = getWeekBudget(week.key);
+          const weekAssigned = Object.fromEntries(employees.map(emp => [emp.id, 0]));
+          const weekDaysWorked = Object.fromEntries(employees.map(emp => [emp.id, new Set()]));
+          const dayDemands = calculateDayDemands(week, budget, monthIndex);
+          let weekUnallocated = 0;
+
+          dayDemands.forEach(({ date, dayIndex, demand }) => {
+            if (demand <= 0.01) return;
+            const opening = state.settings.openingHours[dayIndex];
+            const openHours = duration(opening.start, opening.end);
+            let remaining = demand;
+            let safety = 0;
+            let slotIndex = 0;
+
+            const minShift = Number(state.settings.minShift);
+            const maxShift = Number(state.settings.maxShift);
+            let slotsRemaining = Math.ceil(remaining / maxShift);
+
+            while (slotsRemaining > 0 && remaining >= minShift - 0.01 && safety < 100) {
+              safety += 1;
+              const minimumReserve = minShift * Math.max(0, slotsRemaining - 1);
+              let desiredLength = roundHours(Math.min(maxShift, remaining - minimumReserve));
+              desiredLength = Math.min(maxShift, Math.max(minShift, desiredLength));
+              const currentDateKey = dateKey(date);
+
+              const buildCandidates = relaxed => employees
+                .filter(emp => isEmployeeAvailable(emp, dayIndex))
+                .filter(emp => !generated.some(shift => shift.date === currentDateKey && shift.employeeId === emp.id))
+                .filter(emp => weekDaysWorked[emp.id].size < Number(state.settings.maxDays))
+                .map(emp => {
+                  const monthlyRemaining = Math.max(0, monthsTargets[emp.id] - monthAssigned[emp.id]);
+                  const weeklyMax = emp.weeklyHours * (1 + Number(state.settings.weeklyDeviation));
+                  const weeklyRemaining = Math.max(0, weeklyMax - weekAssigned[emp.id]);
+                  const monthlyCapacity = relaxed ? Infinity : monthlyRemaining + Math.max(Number(state.settings.rounding), 0.5);
+                  const capacity = Math.min(monthlyCapacity, weeklyRemaining, maxShift, openHours);
+                  const ratio = monthsTargets[emp.id] ? monthAssigned[emp.id] / monthsTargets[emp.id] : 1;
+                  const urgency = monthlyRemaining / remainingOpenOpportunities(emp, date);
+                  return { emp, capacity, ratio, urgency, monthlyRemaining, canMeet: capacity >= desiredLength - 0.01 };
+                })
+                .filter(item => item.capacity >= minShift - 0.01)
+                .sort((a, b) => Number(b.canMeet) - Number(a.canMeet) || b.urgency - a.urgency || a.ratio - b.ratio || b.monthlyRemaining - a.monthlyRemaining || b.capacity - a.capacity);
+
+              let chosen = buildCandidates(false)[0] || buildCandidates(true)[0];
+              if (!chosen) break;
+
+              let shiftLength = Math.min(desiredLength, chosen.capacity, remaining);
+              if (slotsRemaining > 1) {
+                const maximumNow = remaining - minimumReserve;
+                if (maximumNow >= minShift) shiftLength = Math.min(shiftLength, maximumNow);
+              }
+              shiftLength = roundHours(shiftLength);
+              if (shiftLength < minShift - 0.01) break;
+
+              const placement = chooseShiftPlacement(opening, shiftLength, slotIndex);
+              const shift = {
+                id: uid(),
+                date: currentDateKey,
+                employeeId: chosen.emp.id,
+                start: placement.start,
+                end: placement.end
+              };
+              generated.push(shift);
+              monthAssigned[chosen.emp.id] += shiftLength;
+              weekAssigned[chosen.emp.id] += shiftLength;
+              weekDaysWorked[chosen.emp.id].add(currentDateKey);
+              remaining = roundHours(Math.max(0, remaining - shiftLength));
+              slotsRemaining -= 1;
+              slotIndex += 1;
+            }
+
+            if (remaining > 0.01) {
+              const toppedUp = topUpExistingShifts(generated, dateKey(date), remaining, opening, weekAssigned, monthAssigned, monthsTargets, employees);
+              remaining = roundHours(Math.max(0, remaining - toppedUp));
+            }
+            weekUnallocated += remaining;
+          });
+
+          if (weekUnallocated > 0.5) warnings.push(`Week ${getWeekNumber(week.start)}: ${formatHours(weekUnallocated)} niet toegewezen`);
+        });
+
+        state.shifts = [...previousOtherMonths, ...generated];
+        saveState(false);
+        activeWeekKey = getMonthWeeks()[0]?.key || null;
+        renderAll();
+        switchView('schedule');
+        toast(warnings.length ? `Rooster gemaakt. ${warnings.join(' · ')}` : 'Maandrooster succesvol verdeeld.');
+      }
+
+      function calculateDayDemands(week, budget, monthIndex) {
+        const openDays = week.days.map((date, dayIndex) => {
+          const opening = state.settings.openingHours[dayIndex];
+          const inMonth = date.getMonth() === monthIndex;
+          const openDuration = opening.open && inMonth ? duration(opening.start, opening.end) : 0;
+          const weight = openDuration * Math.max(0.1, Number(opening.factor) || 1);
+          return { date, dayIndex, weight, openDuration };
+        });
+        const totalWeight = openDays.reduce((sum, day) => sum + day.weight, 0);
+        if (!totalWeight) return openDays.map(day => ({ ...day, demand: 0 }));
+        let assigned = 0;
+        const result = openDays.map((day, index) => {
+          let demand = index === openDays.length - 1 ? budget - assigned : roundHours(budget * day.weight / totalWeight);
+          demand = Math.max(0, demand);
+          assigned += demand;
+          return { ...day, demand };
+        });
+        const minShift = Number(state.settings.minShift);
+        result.filter(day => day.demand > 0.01 && day.demand < minShift - 0.01).forEach(smallDay => {
+          const receiver = result
+            .filter(day => day !== smallDay && day.weight > 0)
+            .sort((a, b) => b.weight - a.weight)[0];
+          if (receiver) {
+            receiver.demand = roundHours(receiver.demand + smallDay.demand);
+            smallDay.demand = 0;
+          }
+        });
+
+        const actualTotal = result.reduce((sum, day) => sum + day.demand, 0);
+        const difference = roundHours(budget - actualTotal);
+        if (Math.abs(difference) > 0.01) {
+          const candidate = [...result].filter(day => day.weight > 0).sort((a,b) => b.weight - a.weight)[0];
+          if (candidate) candidate.demand = roundHours(Math.max(0, candidate.demand + difference));
+        }
+        return result;
+      }
+
+      function chooseShiftPlacement(opening, length, index) {
+        const start = timeToHours(opening.start);
+        const end = timeToHours(opening.end);
+        let shiftStart;
+        if (index % 3 === 0) shiftStart = start;
+        else if (index % 3 === 1) shiftStart = Math.max(start, end - length);
+        else shiftStart = Math.max(start, Math.min(end - length, start + (end - start - length) / 2));
+        shiftStart = roundHours(shiftStart);
+        const shiftEnd = roundHours(Math.min(end, shiftStart + length));
+        return { start: hoursToTime(shiftStart), end: hoursToTime(shiftEnd) };
+      }
+
+      function topUpExistingShifts(generated, date, remaining, opening, weekAssigned, monthAssigned, monthTargets, employees) {
+        let added = 0;
+        const maxShift = Number(state.settings.maxShift);
+        const close = timeToHours(opening.end);
+        const candidates = generated
+          .filter(shift => shift.date === date)
+          .sort((a, b) => {
+            const ratioA = monthTargets[a.employeeId] ? monthAssigned[a.employeeId] / monthTargets[a.employeeId] : 1;
+            const ratioB = monthTargets[b.employeeId] ? monthAssigned[b.employeeId] / monthTargets[b.employeeId] : 1;
+            return ratioA - ratioB;
+          });
+
+        for (const shift of candidates) {
+          if (remaining - added <= 0.01) break;
+          const emp = employees.find(item => item.id === shift.employeeId);
+          if (!emp) continue;
+          const current = shiftHours(shift);
+          const weeklyMax = emp.weeklyHours * (1 + Number(state.settings.weeklyDeviation));
+          const capacity = Math.min(maxShift - current, close - timeToHours(shift.end), weeklyMax - weekAssigned[emp.id], remaining - added);
+          const extension = roundHours(Math.max(0, capacity));
+          if (extension <= 0) continue;
+          shift.end = hoursToTime(timeToHours(shift.end) + extension);
+          weekAssigned[emp.id] += extension;
+          monthAssigned[emp.id] += extension;
+          added += extension;
+        }
+        return added;
+      }
+
+      function openEmployeeModal(employeeId) {
+        const emp = state.employees.find(item => item.id === employeeId);
+        if (!emp) return;
+        el('editEmployeeId').value = emp.id;
+        el('editEmployeeName').value = emp.name;
+        el('editEmployeeRole').value = emp.role;
+        el('editEmployeeType').value = emp.type;
+        el('editEmployeeHours').value = emp.weeklyHours;
+        const values = [...emp.availability];
+        renderDayPicker(el('editEmployeeDays'), values, updated => {
+          el('editEmployeeDays').dataset.values = JSON.stringify(updated);
+        });
+        el('editEmployeeDays').dataset.values = JSON.stringify(values);
+        openModal('employeeModal');
+      }
+
+      function openShiftModal(date, shiftId = '', preferredEmployeeId = '') {
+        const shift = shiftId ? state.shifts.find(item => item.id === shiftId) : null;
+        const targetDate = shift?.date || date;
+        const dayIndex = (new Date(`${targetDate}T12:00:00`).getDay() + 6) % 7;
+        const opening = state.settings.openingHours[dayIndex];
+        const eligible = getActiveEmployees().filter(emp => isEmployeeAvailable(emp, dayIndex));
+        el('shiftModalTitle').textContent = shift ? 'Dienst aanpassen' : 'Dienst toevoegen';
+        el('shiftId').value = shift?.id || '';
+        el('shiftDate').value = targetDate;
+        el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}</option>`).join('');
+        if (shift && !eligible.some(emp => emp.id === shift.employeeId)) {
+          const emp = state.employees.find(item => item.id === shift.employeeId);
+          el('shiftEmployee').insertAdjacentHTML('beforeend', `<option value="${shift.employeeId}">${escapeHtml(emp?.name || 'Onbekend')}</option>`);
+        }
+        el('shiftEmployee').value = shift?.employeeId || (eligible.some(emp => emp.id === preferredEmployeeId) ? preferredEmployeeId : eligible[0]?.id) || '';
+        el('shiftStart').value = shift?.start || opening.start;
+        el('shiftEnd').value = shift?.end || hoursToTime(Math.min(timeToHours(opening.end), timeToHours(opening.start) + Number(state.settings.minShift)));
+        el('deleteShiftBtn').style.visibility = shift ? 'visible' : 'hidden';
+        openModal('shiftModal');
+      }
+
+      function openModal(id) { el(id).classList.add('open'); }
+      function closeModal(id) { el(id).classList.remove('open'); }
+
+      function exportCsv() {
+        const shifts = shiftsInMonth().sort((a,b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+        if (!shifts.length) {
+          toast('Er is nog geen rooster om te exporteren.');
+          return;
+        }
+        const rows = [['Datum','Dag','Naam','Functie','Type','Start','Einde','Uren','Weeknummer']];
+        shifts.forEach(shift => {
+          const emp = state.employees.find(item => item.id === shift.employeeId);
+          const date = new Date(`${shift.date}T12:00:00`);
+          rows.push([
+            shift.date,
+            dayNames[(date.getDay() + 6) % 7],
+            emp?.name || 'Onbekend',
+            emp?.role || '',
+            typeLabel(emp?.type),
+            shift.start,
+            shift.end,
+            String(shiftHours(shift)).replace('.', ','),
+            getWeekNumber(date)
+          ]);
+        });
+        rows.push([]);
+        rows.push(['Medewerker','Contracturen per week','Eerlijk maanddoel','Gepland','Percentage']);
+        getActiveEmployees().forEach(emp => {
+          const target = fairTarget(emp);
+          const planned = plannedForEmployee(emp.id);
+          rows.push([emp.name, emp.weeklyHours, target.toFixed(2).replace('.', ','), planned.toFixed(2).replace('.', ','), target ? `${(planned/target*100).toFixed(1)}%` : '0%']);
+        });
+        const csv = rows.map(row => row.map(csvEscape).join(';')).join('\r\n');
+        const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `werkrooster-${state.month}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function csvEscape(value) {
+        const text = String(value ?? '');
+        return /[;"\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function toast(message) {
+        clearTimeout(toastTimer);
+        el('toast').textContent = message;
+        el('toast').classList.add('show');
+        toastTimer = setTimeout(() => el('toast').classList.remove('show'), 4200);
+      }
+
+      function changeMonth(offset) {
+        const { year, monthIndex } = parseMonth(state.month);
+        const next = new Date(year, monthIndex + offset, 1);
+        state.month = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+        activeWeekKey = null;
+        saveState();
+      }
+
+      function attachEvents() {
+        document.querySelectorAll('.nav button').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
+        document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => switchView(button.dataset.go)));
+
+        let newAvailability = [1,1,1,1,1,0,0];
+        renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+
+        el('employeeType').addEventListener('change', event => {
+          if (event.target.value === 'weekend') {
+            newAvailability = [0,0,0,0,0,1,1];
+            renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+          }
+        });
+
+        el('employeeForm').addEventListener('submit', event => {
+          event.preventDefault();
+          state.employees.push({
+            id: uid(),
+            name: el('employeeName').value.trim(),
+            role: el('employeeRole').value.trim(),
+            type: el('employeeType').value,
+            weeklyHours: Number(el('employeeHours').value),
+            availability: [...newAvailability],
+            active: true
+          });
+          event.target.reset();
+          el('employeeHours').value = 24;
+          newAvailability = [1,1,1,1,1,0,0];
+          renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+          saveState();
+          toast('Medewerker toegevoegd.');
+        });
+
+        el('employeeList').addEventListener('click', event => {
+          const button = event.target.closest('[data-edit-employee]');
+          if (button) openEmployeeModal(button.dataset.editEmployee);
+        });
+
+        el('employeeEditForm').addEventListener('submit', event => {
+          event.preventDefault();
+          const emp = state.employees.find(item => item.id === el('editEmployeeId').value);
+          if (!emp) return;
+          emp.name = el('editEmployeeName').value.trim();
+          emp.role = el('editEmployeeRole').value.trim();
+          emp.type = el('editEmployeeType').value;
+          emp.weeklyHours = Number(el('editEmployeeHours').value);
+          emp.availability = JSON.parse(el('editEmployeeDays').dataset.values || '[1,1,1,1,1,0,0]');
+          closeModal('employeeModal');
+          saveState();
+          toast('Medewerker bijgewerkt.');
+        });
+
+        el('deleteEmployeeBtn').addEventListener('click', () => {
+          const id = el('editEmployeeId').value;
+          state.employees = state.employees.filter(emp => emp.id !== id);
+          state.shifts = state.shifts.filter(shift => shift.employeeId !== id);
+          closeModal('employeeModal');
+          saveState();
+          toast('Medewerker en bijbehorende diensten verwijderd.');
+        });
+
+        el('settingsView').addEventListener('change', event => {
+          const target = event.target;
+          if (target.id === 'monthPickerSettings') {
+            state.month = target.value;
+            activeWeekKey = null;
+          } else if (target.id === 'minShift') {
+            state.settings.minShift = Number(target.value);
+          } else if (target.id === 'maxShift') {
+            state.settings.maxShift = Number(target.value);
+          } else if (target.id === 'maxDays') {
+            state.settings.maxDays = Number(target.value);
+          } else if (target.id === 'weeklyDeviation') {
+            state.settings.weeklyDeviation = Number(target.value);
+          } else if (target.id === 'rounding') {
+            state.settings.rounding = Number(target.value);
+          } else if (target.dataset.opening !== undefined) {
+            const index = Number(target.dataset.opening);
+            const field = target.dataset.field;
+            state.settings.openingHours[index][field] = field === 'open' ? target.value === 'true' : field === 'factor' ? Number(target.value) : target.value;
+          } else if (target.dataset.weekBudget) {
+            setWeekBudget(target.dataset.weekBudget, target.value);
+          } else {
+            return;
+          }
+          saveState();
+        });
+
+        el('monthPickerSchedule').addEventListener('change', event => {
+          state.month = event.target.value;
+          activeWeekKey = null;
+          saveState();
+        });
+        el('prevMonth').addEventListener('click', () => changeMonth(-1));
+        el('nextMonth').addEventListener('click', () => changeMonth(1));
+
+        el('weekTabs').addEventListener('click', event => {
+          const button = event.target.closest('[data-week-tab]');
+          if (!button) return;
+          activeWeekKey = button.dataset.weekTab;
+          renderSchedule();
+        });
+
+        document.querySelector('.schedule-view-switch').addEventListener('click', event => {
+          const button = event.target.closest('[data-schedule-mode]');
+          if (!button) return;
+          setScheduleMode(button.dataset.scheduleMode);
+        });
+
+        el('printScheduleBtn').addEventListener('click', () => {
+          setScheduleMode('matrix');
+          requestAnimationFrame(() => window.print());
+        });
+
+        el('scheduleMatrix').addEventListener('click', event => {
+          if (activeView !== 'edit') return;
+          const addButton = event.target.closest('[data-add-shift]');
+          if (addButton) openShiftModal(addButton.dataset.addShift, '', addButton.dataset.employeeId || '');
+          const editButton = event.target.closest('[data-edit-shift]');
+          if (editButton) openShiftModal('', editButton.dataset.editShift);
+        });
+
+        el('scheduleGrid').addEventListener('click', event => {
+          if (activeView !== 'edit') return;
+          const addButton = event.target.closest('[data-add-shift]');
+          if (addButton) openShiftModal(addButton.dataset.addShift);
+          const editButton = event.target.closest('[data-edit-shift]');
+          if (editButton) openShiftModal('', editButton.dataset.editShift);
+        });
+
+        el('shiftDate').addEventListener('change', event => {
+          const date = event.target.value;
+          if (!date) return;
+          const dayIndex = (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
+          const current = el('shiftEmployee').value;
+          const eligible = getActiveEmployees().filter(emp => isEmployeeAvailable(emp, dayIndex));
+          el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}</option>`).join('');
+          if (eligible.some(emp => emp.id === current)) el('shiftEmployee').value = current;
+        });
+
+        el('shiftForm').addEventListener('submit', event => {
+          event.preventDefault();
+          const date = el('shiftDate').value;
+          const dayIndex = (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
+          const opening = state.settings.openingHours[dayIndex];
+          const start = el('shiftStart').value;
+          const end = el('shiftEnd').value;
+          if (!opening.open) return toast('De winkel is op deze dag gesloten.');
+          if (timeToHours(start) < timeToHours(opening.start) || timeToHours(end) > timeToHours(opening.end)) return toast('De dienst moet binnen de openingstijden vallen.');
+          if (duration(start, end) <= 0) return toast('De eindtijd moet na de starttijd liggen.');
+          const id = el('shiftId').value;
+          if (id) {
+            const shift = state.shifts.find(item => item.id === id);
+            if (shift) Object.assign(shift, { date, employeeId: el('shiftEmployee').value, start, end });
+          } else {
+            state.shifts.push({ id: uid(), date, employeeId: el('shiftEmployee').value, start, end });
+          }
+          closeModal('shiftModal');
+          saveState();
+          toast(id ? 'Dienst bijgewerkt.' : 'Dienst toegevoegd.');
+        });
+
+        el('deleteShiftBtn').addEventListener('click', () => {
+          const id = el('shiftId').value;
+          state.shifts = state.shifts.filter(shift => shift.id !== id);
+          closeModal('shiftModal');
+          saveState();
+          toast('Dienst verwijderd.');
+        });
+
+        document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.closeModal)));
+        el('themeSelect').addEventListener('change', event => {
+          state.settings.theme = event.target.value;
+          saveState();
+        });
+        el('densitySelect').addEventListener('change', event => {
+          state.settings.density = event.target.value;
+          saveState();
+        });
+
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => {
+          if (event.target === backdrop) closeModal(backdrop.id);
+        }));
+
+        el('generateBtnSchedule').addEventListener('click', generateSchedule);
+        el('exportBtn').addEventListener('click', exportCsv);
+        el('clearScheduleBtn').addEventListener('click', () => {
+          state.shifts = state.shifts.filter(shift => !shift.date.startsWith(state.month));
+          saveState();
+          toast('Rooster voor deze maand gewist.');
+        });
+      }
+
+      attachEvents();
+      switchView('schedule');
+    })();
+  </script>
+</body>
+</html>
