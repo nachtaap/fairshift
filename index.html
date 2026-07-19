@@ -262,8 +262,11 @@
       gap: 12px;
     }
 
-    .employee-name strong { display: block; }
+    .employee-card > * { min-width: 0; }
+    .employee-name strong,
+    .employee-name span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .employee-name span { color: var(--muted); font-size: .82rem; }
+    .employee-card .badge { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
     .badge {
       display: inline-flex;
@@ -397,6 +400,169 @@
     .summary-chip.warn { background: var(--warning-soft); color: #9a530a; }
     .summary-chip.bad { background: var(--danger-soft); color: var(--danger); }
 
+    .schedule-view-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-soft);
+    }
+
+    .schedule-mode-btn {
+      min-height: 34px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .schedule-mode-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(23, 50, 77, .09);
+    }
+
+    .schedule-panel[hidden] { display: none !important; }
+
+    .matrix-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+    }
+
+    .schedule-matrix {
+      width: 100%;
+      min-width: 1020px;
+      table-layout: fixed;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .79rem;
+    }
+
+    .schedule-matrix col.name-col { width: 160px; }
+    .schedule-matrix col.day-col { width: 112px; }
+    .schedule-matrix col.total-col { width: 72px; }
+
+    .schedule-matrix th,
+    .schedule-matrix td {
+      height: 58px;
+      padding: 6px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      overflow: hidden;
+    }
+
+    .schedule-matrix tr > *:last-child { border-right: 0; }
+    .schedule-matrix tfoot tr:last-child > * { border-bottom: 0; }
+
+    .schedule-matrix thead th {
+      height: 64px;
+      background: var(--primary);
+      color: white;
+      text-align: left;
+      font-weight: 900;
+    }
+
+    .schedule-matrix thead th:not(:first-child) { text-align: center; }
+
+    .schedule-matrix .matrix-day-name,
+    .schedule-matrix .matrix-day-meta,
+    .matrix-employee-name,
+    .matrix-employee-role,
+    .matrix-shift-time,
+    .matrix-shift-meta {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .schedule-matrix .matrix-day-name { font-size: .84rem; }
+    .schedule-matrix .matrix-day-meta { margin-top: 3px; font-size: .66rem; font-weight: 650; opacity: .8; }
+
+    .matrix-employee {
+      background: #f7fafc;
+      text-align: left;
+    }
+
+    .matrix-employee-name { color: var(--text); font-size: .86rem; font-weight: 900; }
+    .matrix-employee-role { margin-top: 3px; color: var(--muted); font-size: .68rem; font-weight: 650; }
+
+    .matrix-cell {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      padding: 5px 6px;
+      color: var(--text);
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .matrix-cell:hover:not(:disabled) {
+      border-color: #b9cbd6;
+      background: var(--surface-soft);
+    }
+
+    .matrix-cell.has-shift {
+      background: var(--accent-soft);
+      border-color: #bce8e3;
+    }
+
+    .matrix-cell.is-free { color: var(--muted); }
+    .matrix-cell.is-unavailable,
+    .matrix-cell.is-closed {
+      color: #8b969f;
+      background: #f1f3f5;
+      cursor: default;
+    }
+
+    .matrix-cell.is-outside { opacity: .52; cursor: default; }
+    .matrix-shift-time { font-weight: 900; font-size: .76rem; }
+    .matrix-shift-meta { margin-top: 3px; color: var(--primary-2); font-size: .64rem; font-weight: 750; }
+    .matrix-empty-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .68rem; font-weight: 750; }
+
+    .matrix-total {
+      text-align: center;
+      font-weight: 900;
+      white-space: nowrap;
+      background: #fbfdfe;
+    }
+
+    .schedule-matrix tfoot th,
+    .schedule-matrix tfoot td {
+      height: 44px;
+      background: #eef4f7;
+      font-weight: 900;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .schedule-matrix tfoot th { text-align: left; }
+
+    .matrix-print-heading {
+      display: none;
+    }
+
+    .shift strong,
+    .shift span,
+    .shift .shift-role {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
     .schedule-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(170px, 1fr));
@@ -417,8 +583,10 @@
     }
 
     .day-column.outside { opacity: .48; }
-    .day-head { display: flex; justify-content: space-between; gap: 8px; }
-    .day-head strong { display: block; }
+    .day-head { display: flex; justify-content: space-between; gap: 8px; min-height: 42px; }
+    .day-head > div:first-child { min-width: 0; }
+    .day-head strong,
+    .day-head span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .day-head span { color: var(--muted); font-size: .76rem; }
     .day-total { font-size: .74rem; font-weight: 900; color: var(--primary-2); white-space: nowrap; }
 
@@ -431,6 +599,8 @@
       border-left: 4px solid var(--accent);
       box-shadow: 0 4px 12px rgba(23, 50, 77, .06);
       position: relative;
+      height: 78px;
+      overflow: hidden;
     }
     .shift:hover { border-color: #b8c8d3; }
     .shift strong { display: block; font-size: .88rem; padding-right: 20px; }
@@ -576,6 +746,81 @@
       .week-budget-row .capacity { grid-column: 1 / -1; text-align: left; }
       .schedule-grid { grid-template-columns: repeat(7, 165px); }
       .card { padding: 16px; }
+      .schedule-toolbar { align-items: stretch; }
+      .schedule-view-switch { order: 3; width: 100%; }
+      .schedule-mode-btn { flex: 1; }
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 7mm;
+    }
+
+    @media print {
+      :root { --line: #aeb7bd; }
+      html, body { width: 100%; min-height: 0; background: white !important; }
+      body { color: #111; font-family: Arial, Helvetica, sans-serif; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .sidebar,
+      .topbar,
+      .schedule-toolbar,
+      .week-tabs,
+      #scheduleNotice,
+      #weekSummary,
+      #coveragePanel,
+      .toast,
+      .modal-backdrop,
+      body > :not(.app-shell) { display: none !important; }
+      .app-shell { display: block !important; min-height: 0; }
+      .main { padding: 0 !important; }
+      .view { display: none !important; }
+      #scheduleView { display: block !important; }
+      #scheduleView > .card {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      #matrixPanel { display: block !important; }
+      .matrix-print-heading {
+        display: grid !important;
+        grid-template-columns: 1fr auto;
+        gap: 5mm;
+        align-items: end;
+        margin: 0 0 4mm;
+      }
+      .matrix-print-heading h2 { margin: 0; font-size: 15pt; }
+      .matrix-print-heading p { margin: 1mm 0 0; font-size: 8pt; }
+      .matrix-print-stats { text-align: right; white-space: nowrap; font-size: 8pt; font-weight: 700; }
+      .matrix-wrap { overflow: visible; border: 1px solid #7f898f; border-radius: 0; }
+      .schedule-matrix { min-width: 0; width: 100%; font-size: 7pt; }
+      .schedule-matrix col.name-col { width: 16%; }
+      .schedule-matrix col.day-col { width: 11%; }
+      .schedule-matrix col.total-col { width: 7%; }
+      .schedule-matrix th,
+      .schedule-matrix td {
+        height: 8.4mm;
+        padding: 1.1mm;
+        border-color: #9ba5ab;
+      }
+      .schedule-matrix thead th { height: 11mm; background: #dfe6ea !important; color: #111 !important; }
+      .schedule-matrix .matrix-day-name { font-size: 7.5pt; }
+      .schedule-matrix .matrix-day-meta { font-size: 5.5pt; color: #333; opacity: 1; }
+      .matrix-employee { background: #f2f4f5 !important; }
+      .matrix-employee-name { font-size: 7.3pt; color: #111; }
+      .matrix-employee-role { font-size: 5.5pt; color: #333; }
+      .matrix-cell { height: 6.2mm; min-height: 6.2mm; padding: .7mm; border-radius: 0; }
+      .matrix-cell.has-shift { background: #edf4f1 !important; border-color: #a9b8b4; }
+      .matrix-cell.is-unavailable,
+      .matrix-cell.is-closed { background: #eceeef !important; }
+      .matrix-shift-time { font-size: 6.4pt; }
+      .matrix-shift-meta,
+      .matrix-empty-label { font-size: 5.3pt; color: #333; }
+      .matrix-total { background: #f7f7f7 !important; }
+      .schedule-matrix tfoot th,
+      .schedule-matrix tfoot td { height: 7mm; background: #e5e9eb !important; }
+      tr, td, th { break-inside: avoid; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -781,7 +1026,12 @@
               <input type="month" id="monthPickerSchedule" />
               <button class="btn ghost small" id="nextMonth">→</button>
             </div>
+            <div class="schedule-view-switch" aria-label="Roosterweergave">
+              <button class="schedule-mode-btn active" data-schedule-mode="matrix">Weekrooster</button>
+              <button class="schedule-mode-btn" data-schedule-mode="coverage">Dekking per dag</button>
+            </div>
             <div class="top-actions">
+              <button class="btn ghost" id="printScheduleBtn">⎙ Print A4</button>
               <button class="btn ghost" id="clearScheduleBtn">Rooster wissen</button>
               <button class="btn accent" id="generateBtnSchedule">✦ Automatisch verdelen</button>
             </div>
@@ -789,7 +1039,15 @@
           <div class="week-tabs" id="weekTabs"></div>
           <div id="scheduleNotice"></div>
           <div class="week-summary" id="weekSummary"></div>
-          <div class="schedule-grid" id="scheduleGrid"></div>
+          <div class="schedule-panel" id="matrixPanel">
+            <div class="matrix-print-heading" id="matrixPrintHeading"></div>
+            <div class="matrix-wrap">
+              <table class="schedule-matrix" id="scheduleMatrix"></table>
+            </div>
+          </div>
+          <div class="schedule-panel" id="coveragePanel" hidden>
+            <div class="schedule-grid" id="scheduleGrid"></div>
+          </div>
         </section>
       </section>
 
@@ -967,6 +1225,7 @@
       let state = loadState();
       let activeView = 'dashboard';
       let activeWeekKey = null;
+      let activeScheduleMode = 'matrix';
       let toastTimer = null;
 
       const el = id => document.getElementById(id);
@@ -1245,7 +1504,7 @@
           dashboard: ['Overzicht', 'Plan eerlijk over de hele maand, zonder versnipperde diensten.'],
           employees: ['Medewerkers', 'Leg functies, contracturen en beschikbaarheid vast.'],
           settings: ['Instellingen', 'Bepaal openingstijden, planregels en directiebudgetten.'],
-          schedule: ['Rooster', 'Bekijk en verfijn de planning per week.'],
+          schedule: ['Rooster', 'Plan per medewerker, controleer de dagdekking en print direct op A4.'],
           analysis: ['Analyse', 'Controleer uren, percentages en afwijkingen per maand en week.']
         };
         el('pageTitle').textContent = titles[view][0];
@@ -1340,6 +1599,15 @@
         });
       }
 
+      function setScheduleMode(mode) {
+        activeScheduleMode = mode === 'coverage' ? 'coverage' : 'matrix';
+        document.querySelectorAll('[data-schedule-mode]').forEach(button => {
+          button.classList.toggle('active', button.dataset.scheduleMode === activeScheduleMode);
+        });
+        el('matrixPanel').hidden = activeScheduleMode !== 'matrix';
+        el('coveragePanel').hidden = activeScheduleMode !== 'coverage';
+      }
+
       function renderSchedule() {
         const weeks = getMonthWeeks();
         if (!activeWeekKey || !weeks.some(week => week.key === activeWeekKey)) activeWeekKey = weeks[0]?.key || null;
@@ -1348,10 +1616,12 @@
 
         const week = weeks.find(item => item.key === activeWeekKey);
         const grid = el('scheduleGrid');
+        const matrix = el('scheduleMatrix');
         const summary = el('weekSummary');
         const notice = el('scheduleNotice');
         if (!week) {
           grid.innerHTML = '';
+          matrix.innerHTML = '';
           summary.innerHTML = '';
           return;
         }
@@ -1366,6 +1636,14 @@
           <span class="summary-chip">${week.days.filter(day => day.getMonth() === parseMonth(state.month).monthIndex).length} dagen in deze maand</span>
         `;
 
+        el('matrixPrintHeading').innerHTML = `
+          <div>
+            <h2>Weekrooster · week ${getWeekNumber(week.start)}</h2>
+            <p>${formatWeekLabel(week)} · ${new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric' }).format(week.start)}</p>
+          </div>
+          <div class="matrix-print-stats">Urenbudget ${formatHours(budget)} · gepland ${formatHours(planned)} · verschil ${diff > 0 ? '+' : ''}${formatHours(diff)}</div>
+        `;
+
         const invalidShifts = state.shifts.filter(shift => shift.date.startsWith(state.month) && !state.employees.some(emp => emp.id === shift.employeeId));
         if (invalidShifts.length) {
           notice.innerHTML = '<div class="alert warning">Er staan diensten van verwijderde medewerkers in het rooster. Verwijder of pas deze diensten handmatig aan.</div>';
@@ -1375,6 +1653,63 @@
           notice.innerHTML = '';
         }
 
+        renderScheduleMatrix(week);
+        renderCoverageGrid(week);
+        setScheduleMode(activeScheduleMode);
+      }
+
+      function renderScheduleMatrix(week) {
+        const matrix = el('scheduleMatrix');
+        const employees = getActiveEmployees();
+        const { monthIndex } = parseMonth(state.month);
+        const dayHeaders = week.days.map((date, dayIndex) => {
+          const opening = state.settings.openingHours[dayIndex];
+          const meta = `${formatDate(date, { day:'numeric', month:'short' })} · ${opening.open ? `${opening.start}–${opening.end}` : 'gesloten'}`;
+          return `<th title="${escapeHtml(dayNames[dayIndex])} · ${escapeHtml(meta)}"><span class="matrix-day-name">${dayNames[dayIndex]}</span><span class="matrix-day-meta">${escapeHtml(meta)}</span></th>`;
+        }).join('');
+
+        const rows = employees.map(emp => {
+          const cells = week.days.map((date, dayIndex) => {
+            const key = dateKey(date);
+            const opening = state.settings.openingHours[dayIndex];
+            const shifts = state.shifts
+              .filter(shift => shift.date === key && shift.employeeId === emp.id)
+              .sort((a, b) => a.start.localeCompare(b.start));
+            const outside = date.getMonth() !== monthIndex;
+            const available = isEmployeeAvailable(emp, dayIndex);
+            if (shifts.length) {
+              const first = shifts[0];
+              const timeLabel = shifts.map(shift => `${shift.start}–${shift.end}`).join(' / ');
+              const total = shifts.reduce((sum, shift) => sum + shiftHours(shift), 0);
+              const extra = shifts.length > 1 ? ` · +${shifts.length - 1} dienst` : '';
+              return `<td><button class="matrix-cell has-shift ${outside ? 'is-outside' : ''}" data-edit-shift="${first.id}" title="${escapeHtml(emp.name)} · ${escapeHtml(timeLabel)}"><span class="matrix-shift-time">${escapeHtml(timeLabel)}</span><span class="matrix-shift-meta">${formatHours(total)}${extra}</span></button></td>`;
+            }
+            if (outside) return '<td><button class="matrix-cell is-outside" disabled><span class="matrix-empty-label">Buiten maand</span></button></td>';
+            if (!opening.open) return '<td><button class="matrix-cell is-closed" disabled><span class="matrix-empty-label">Gesloten</span></button></td>';
+            if (!available) return '<td><button class="matrix-cell is-unavailable" disabled><span class="matrix-empty-label">Niet beschikbaar</span></button></td>';
+            return `<td><button class="matrix-cell is-free" data-add-shift="${key}" data-employee-id="${emp.id}" title="Dienst toevoegen voor ${escapeHtml(emp.name)}"><span class="matrix-empty-label">Vrij</span></button></td>`;
+          }).join('');
+          const employeeTotal = week.days.reduce((sum, date) => sum + state.shifts
+            .filter(shift => shift.date === dateKey(date) && shift.employeeId === emp.id)
+            .reduce((sub, shift) => sub + shiftHours(shift), 0), 0);
+          return `<tr>
+            <th class="matrix-employee" title="${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}"><span class="matrix-employee-name">${escapeHtml(emp.name)}</span><span class="matrix-employee-role">${escapeHtml(emp.role)} · ${typeLabel(emp.type)}</span></th>
+            ${cells}
+            <td class="matrix-total">${formatHours(employeeTotal)}</td>
+          </tr>`;
+        }).join('');
+
+        const dailyTotals = week.days.map(date => `<td>${formatHours(plannedForDate(dateKey(date)))}</td>`).join('');
+        matrix.innerHTML = `
+          <colgroup><col class="name-col">${week.days.map(() => '<col class="day-col">').join('')}<col class="total-col"></colgroup>
+          <thead><tr><th>Medewerker</th>${dayHeaders}<th>Totaal</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="9">Nog geen medewerkers.</td></tr>'}</tbody>
+          <tfoot><tr><th>Dagtotaal</th>${dailyTotals}<td>${formatHours(plannedForWeek(week.key))}</td></tr></tfoot>
+        `;
+      }
+
+      function renderCoverageGrid(week) {
+        const grid = el('scheduleGrid');
         grid.innerHTML = '';
         const { monthIndex } = parseMonth(state.month);
         week.days.forEach((date, dayIndex) => {
@@ -1402,7 +1737,7 @@
       function renderShiftCard(shift) {
         const emp = state.employees.find(item => item.id === shift.employeeId);
         return `
-          <div class="shift">
+          <div class="shift" title="${escapeHtml(emp?.name || 'Onbekend')} · ${shift.start}–${shift.end} · ${escapeHtml(emp?.role || 'Medewerker')}">
             <button class="edit-shift" data-edit-shift="${shift.id}" aria-label="Dienst wijzigen">⋯</button>
             <strong>${escapeHtml(emp?.name || 'Onbekend')}</strong>
             <span>${shift.start}–${shift.end} · ${formatHours(shiftHours(shift))}</span>
@@ -1734,7 +2069,7 @@
         openModal('employeeModal');
       }
 
-      function openShiftModal(date, shiftId = '') {
+      function openShiftModal(date, shiftId = '', preferredEmployeeId = '') {
         const shift = shiftId ? state.shifts.find(item => item.id === shiftId) : null;
         const targetDate = shift?.date || date;
         const dayIndex = (new Date(`${targetDate}T12:00:00`).getDay() + 6) % 7;
@@ -1748,7 +2083,7 @@
           const emp = state.employees.find(item => item.id === shift.employeeId);
           el('shiftEmployee').insertAdjacentHTML('beforeend', `<option value="${shift.employeeId}">${escapeHtml(emp?.name || 'Onbekend')}</option>`);
         }
-        el('shiftEmployee').value = shift?.employeeId || eligible[0]?.id || '';
+        el('shiftEmployee').value = shift?.employeeId || (eligible.some(emp => emp.id === preferredEmployeeId) ? preferredEmployeeId : eligible[0]?.id) || '';
         el('shiftStart').value = shift?.start || opening.start;
         el('shiftEnd').value = shift?.end || hoursToTime(Math.min(timeToHours(opening.end), timeToHours(opening.start) + Number(state.settings.minShift)));
         el('deleteShiftBtn').style.visibility = shift ? 'visible' : 'hidden';
@@ -1929,6 +2264,24 @@
           if (!button) return;
           activeWeekKey = button.dataset.weekTab;
           renderSchedule();
+        });
+
+        document.querySelector('.schedule-view-switch').addEventListener('click', event => {
+          const button = event.target.closest('[data-schedule-mode]');
+          if (!button) return;
+          setScheduleMode(button.dataset.scheduleMode);
+        });
+
+        el('printScheduleBtn').addEventListener('click', () => {
+          setScheduleMode('matrix');
+          requestAnimationFrame(() => window.print());
+        });
+
+        el('scheduleMatrix').addEventListener('click', event => {
+          const addButton = event.target.closest('[data-add-shift]');
+          if (addButton) openShiftModal(addButton.dataset.addShift, '', addButton.dataset.employeeId || '');
+          const editButton = event.target.closest('[data-edit-shift]');
+          if (editButton) openShiftModal('', editButton.dataset.editShift);
         });
 
         el('scheduleGrid').addEventListener('click', event => {
