@@ -142,6 +142,8 @@
 
     .topbar p { margin: 0; color: var(--muted); }
 
+    .topbar p:empty { display: none; }
+
     .top-actions {
       display: flex;
       gap: 10px;
@@ -250,6 +252,24 @@
     .col-12 { grid-column: span 12; }
 
     .employee-list { display: grid; gap: 12px; }
+
+    .employee-add-button {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 12px;
+      background: var(--success);
+      color: white;
+      font-size: 1.65rem;
+      line-height: 1;
+      font-weight: 500;
+      box-shadow: 0 7px 18px rgba(37, 133, 90, .22);
+    }
+    .employee-add-button:hover { filter: brightness(.93); }
+    .employee-add-button:focus-visible { outline: 3px solid rgba(37,133,90,.22); outline-offset: 2px; }
 
     .employee-card {
       border: 1px solid var(--line);
@@ -390,62 +410,33 @@
       font-weight: 800;
     }
 
-    .week-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
-    .week-tab {
-      flex: 0 0 auto;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: white;
-      padding: 8px 12px;
-      font-weight: 800;
-      color: var(--muted);
-    }
-    .week-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    .week-summary {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-
-    .summary-chip {
-      padding: 8px 11px;
-      border-radius: 999px;
-      background: var(--surface-soft);
-      font-size: .8rem;
-      font-weight: 800;
-      color: var(--primary-2);
-    }
-    .summary-chip.ok { background: var(--success-soft); color: var(--success); }
-    .summary-chip.warn { background: var(--warning-soft); color: #9a530a; }
-    .summary-chip.bad { background: var(--danger-soft); color: var(--danger); }
-
-    .schedule-view-switch {
-      display: inline-flex;
+    .week-navigator {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 42px;
       align-items: center;
-      gap: 4px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--surface-soft);
+      gap: 10px;
+      margin-bottom: 12px;
     }
-
-    .schedule-mode-btn {
-      min-height: 34px;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--muted);
-      padding: 7px 11px;
-      font-weight: 850;
+    .week-heading {
+      min-width: 0;
+      text-align: center;
+    }
+    .week-heading strong,
+    .week-heading span {
+      display: block;
+      overflow: hidden;
       white-space: nowrap;
+      text-overflow: ellipsis;
     }
-
-    .schedule-mode-btn.active {
-      background: white;
-      color: var(--primary);
-      box-shadow: 0 2px 8px rgba(23, 50, 77, .09);
+    .week-heading strong { font-size: 1rem; }
+    .week-heading span { color: var(--muted); font-size: .78rem; margin-top: 2px; }
+    .week-arrow {
+      width: 42px;
+      min-width: 42px;
+      height: 42px;
+      padding: 0;
+      border-radius: 10px;
+      font-size: 1.2rem;
     }
 
     .schedule-panel[hidden] { display: none !important; }
@@ -828,8 +819,6 @@
       .schedule-grid { grid-template-columns: repeat(7, 165px); }
       .card { padding: 16px; }
       .schedule-toolbar { align-items: stretch; }
-      .schedule-view-switch { order: 3; width: 100%; }
-      .schedule-mode-btn { flex: 1; }
       .modal-backdrop { padding: 12px; align-items: flex-end; }
       .modal {
         width: 100%;
@@ -860,6 +849,38 @@
       .modal-actions-right .btn { width: 100%; min-width: 0; padding-left: 8px; padding-right: 8px; }
     }
 
+    @media (max-width: 760px) {
+      .week-navigator { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 8px; }
+      .week-arrow { width: 38px; min-width: 38px; height: 38px; }
+      .week-heading strong { font-size: .95rem; }
+      .week-heading span { font-size: .72rem; }
+    }
+
+
+    @media (max-width: 760px) {
+      #globalActions {
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        width:100%;
+        gap:7px;
+        margin-top:12px;
+      }
+      #globalActions .header-budget { grid-column:1 / -1; width:100%; justify-content:center; }
+      #globalActions .btn {
+        min-width:0;
+        min-height:40px;
+        padding:7px 8px;
+        font-size:.75rem;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      #globalActions #previewScheduleBtn span {
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      #scheduleWorkspace { margin-top:0; }
+    }
+
     @page {
       size: A4 landscape;
       margin: 7mm;
@@ -872,9 +893,7 @@
       .sidebar,
       .topbar,
       .schedule-toolbar,
-      .week-tabs,
       #scheduleNotice,
-      #weekSummary,
       #coveragePanel,
       .toast,
       .modal-backdrop,
@@ -932,7 +951,87 @@
       tr, td, th { break-inside: avoid; page-break-inside: avoid; }
     }
 
-    #globalActions { display:none; }
+    /* Navigatie als uitschuifmenu */
+    .app-shell { display:block; }
+    .main { width:100%; }
+    .sidebar {
+      position:fixed; inset:0 auto 0 0; width:260px; height:100vh;
+      transform:translateX(-105%); transition:transform .22s ease;
+      box-shadow:0 18px 50px rgba(10,28,43,.28); z-index:420;
+    }
+    .sidebar .brand > div:last-child, .sidebar .nav .label, .sidebar .sidebar-foot { display:block; }
+    .sidebar .nav { display:grid; width:100%; overflow:visible; }
+    .sidebar .nav button { width:100%; height:auto; min-height:44px; justify-content:flex-start; padding:12px 14px; }
+    body.menu-open { overflow:hidden; }
+    body.menu-open .sidebar { transform:translateX(0); }
+    .menu-backdrop {
+      position:fixed; inset:0; background:rgba(10,24,37,.42); opacity:0;
+      visibility:hidden; transition:.2s ease; z-index:410;
+    }
+    body.menu-open .menu-backdrop { opacity:1; visibility:visible; }
+    .menu-button { flex:0 0 auto; width:42px; min-width:42px; padding:0; font-size:1.25rem; }
+    .topbar-title { display:flex; align-items:flex-start; gap:12px; min-width:0; }
+    .topbar-title > div { min-width:0; }
+    .edit-settings-grid { grid-template-columns:minmax(0,1fr); }
+    .active-budget-row {
+      grid-column:1 / -1; display:grid; grid-template-columns:minmax(0,1fr) 150px;
+      align-items:end; gap:12px; padding-top:4px;
+    }
+    .active-budget-meta { color:var(--muted); font-size:.76rem; margin-top:4px; }
+    @media (max-width:760px) {
+      .sidebar { width:min(290px,86vw); height:100vh; position:fixed; padding:20px 16px; flex-direction:column; align-items:stretch; gap:22px; }
+      .sidebar .brand { padding:4px 6px; }
+      .sidebar .brand-mark { width:44px; height:44px; }
+      .main { padding:16px 12px 28px; }
+      .topbar { align-items:flex-start; }
+      .topbar-title { width:100%; }
+      .active-budget-row { grid-template-columns:1fr; gap:7px; }
+      .active-budget-row input { width:100%; }
+    }
+
+    .header-budget {
+      min-height:42px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0;
+      background:transparent;
+      font-family:inherit;
+    }
+    .header-budget label {
+      display:flex;
+      align-items:center;
+      min-height:42px;
+      margin:0;
+      color:var(--text);
+      font-family:inherit;
+      font-size:inherit;
+      line-height:1;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .header-budget input {
+      width:82px;
+      height:42px;
+      min-height:42px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:var(--surface);
+      color:var(--text);
+      font-family:inherit;
+      font-size:inherit;
+      font-weight:800;
+      line-height:1;
+      text-align:center;
+    }
+    .header-budget input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(23,163,152,.13); }
+    .header-budget-meta { display:none; }
+
+    #globalActions { display:flex; }
+    body:not(.view-schedule) #globalActions { display:none; }
+    #globalActions .btn { white-space:nowrap; }
     .edit-settings-grid { margin-top:18px; }
     body.theme-navy { --primary:#24324a; --primary-2:#3c587b; --accent:#6d87ad; --accent-soft:#e7edf5; }
     body.theme-forest { --primary:#24483d; --primary-2:#356c5a; --accent:#4f9b80; --accent-soft:#e3f2ec; }
@@ -963,7 +1062,6 @@
     body.preview-mode #scheduleWorkspace .schedule-toolbar,
     body.preview-mode #scheduleWorkspace .week-tabs,
     body.preview-mode #scheduleNotice,
-    body.preview-mode #weekSummary,
     body.preview-mode #coveragePanel,
     body.preview-mode .edit-settings-grid { display:none !important; }
     body.preview-mode .app-shell { display:block; min-height:0; }
@@ -983,11 +1081,140 @@
     }
     @media print { .preview-toolbar { display:none !important; } }
 
+    .matrix-day-btn { display:block; width:100%; border:0; background:transparent; color:inherit; font:inherit; text-align:inherit; cursor:pointer; padding:3px 4px; border-radius:8px; }
+    .schedule-matrix thead th:not(:first-child) .matrix-day-btn { text-align:center; }
+    .matrix-day-btn:hover { background:rgba(255,255,255,.16); }
+    .matrix-day-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .matrix-day-btn.has-override { background:rgba(217,121,23,.22); }
+    .matrix-day-flag { display:inline-block; margin-top:3px; font-size:.56rem; font-weight:900; letter-spacing:.03em; text-transform:uppercase; background:var(--warning-soft); color:#9a530a; border-radius:999px; padding:1px 6px; }
+    body.preview-mode .matrix-day-btn { pointer-events:none; }
+    @media print { .matrix-day-btn { padding:0; } .matrix-day-btn.has-override { background:transparent; } .matrix-day-flag { background:#eadfce !important; color:#7a4708 !important; } }
+
+
+    /* Responsive header: keep title, budget and actions readable at every width */
+    .topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:nowrap;
+    }
+    .topbar-title {
+      align-items:center;
+      flex:0 1 auto;
+    }
+    .topbar-title h1 {
+      margin:0;
+      line-height:1.1;
+    }
+    #globalActions {
+      align-items:center;
+      flex-wrap:wrap;
+      min-width:0;
+    }
+
+    @media (max-width: 1180px) {
+      .topbar {
+        align-items:flex-start;
+        flex-wrap:wrap;
+      }
+      .topbar-title { flex:1 1 auto; }
+      #globalActions {
+        flex:1 0 100%;
+        width:100%;
+        justify-content:flex-end;
+        margin-top:12px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .main { padding:14px 12px 26px; }
+      .topbar {
+        display:flex;
+        gap:12px;
+        margin-bottom:18px;
+      }
+      .topbar-title {
+        width:100%;
+        gap:10px;
+      }
+      .topbar-title h1 {
+        font-size:1.75rem;
+      }
+      .menu-button {
+        width:40px;
+        min-width:40px;
+        height:40px;
+        min-height:40px;
+      }
+      #globalActions {
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+        width:100%;
+        margin-top:0;
+      }
+      #globalActions .header-budget {
+        grid-column:1 / -1;
+        width:100%;
+        min-height:42px;
+        justify-content:flex-start;
+      }
+      #globalActions .header-budget input {
+        flex:1 1 auto;
+        width:auto;
+        min-width:0;
+        max-width:120px;
+      }
+      #globalActions .btn {
+        width:100%;
+        min-width:0;
+        min-height:42px;
+        padding:8px 10px;
+        font-size:.8rem;
+        white-space:normal;
+        line-height:1.2;
+      }
+      #globalActions #generateBtnSchedule {
+        grid-column:1 / -1;
+      }
+      .card-head {
+        align-items:flex-start;
+        flex-wrap:wrap;
+      }
+      .week-navigator {
+        width:100%;
+      }
+      .matrix-wrap {
+        margin-left:-4px;
+        margin-right:-4px;
+        border-radius:12px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .topbar-title h1 { font-size:1.55rem; }
+      #globalActions {
+        grid-template-columns:1fr;
+      }
+      #globalActions .header-budget,
+      #globalActions #generateBtnSchedule {
+        grid-column:auto;
+      }
+      #globalActions .header-budget {
+        justify-content:space-between;
+      }
+      #globalActions .header-budget input {
+        max-width:110px;
+      }
+      .card { padding:14px; border-radius:14px; }
+      .modal-actions-right { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
+    <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebarMenu" aria-hidden="true">
       <div class="brand">
         <div class="brand-mark">FS</div>
         <div>
@@ -999,7 +1226,6 @@
       <nav class="nav" aria-label="Hoofdnavigatie">
         <button class="active" data-view="schedule"><span class="icon">▦</span><span class="label">Rooster</span></button>
         <button data-view="employees"><span class="icon">♟</span><span class="label">Medewerkers</span></button>
-        <button data-view="store"><span class="icon">⌂</span><span class="label">Winkel</span></button>
         <button data-view="analysis"><span class="icon">◒</span><span class="label">Analyse</span></button>
         <button data-view="settings"><span class="icon">⚙</span><span class="label">Instellingen</span></button>
       </nav>
@@ -1007,14 +1233,25 @@
       <div class="sidebar-foot">Gegevens blijven lokaal in deze browser bewaard.</div>
     </aside>
 
-    <main class="main">
+    <main class="main" id="main">
       <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Rooster</h1>
-          <p id="pageSubtitle">Maak, controleer en publiceer het weekrooster.</p>
+        <div class="topbar-title">
+          <button class="btn ghost menu-button" id="menuButton" aria-label="Menu openen" aria-expanded="false">☰</button>
+          <div>
+            <h1 id="pageTitle">Rooster</h1>
+            <p id="pageSubtitle"></p>
+          </div>
         </div>
         <div class="top-actions" id="globalActions">
-          <button class="btn ghost" id="exportBtn">⇩ Exporteer CSV</button>
+          <div class="header-budget" title="Urenbudget voor de actieve week">
+            <label for="activeWeekBudget" id="activeWeekBudgetLabel">Urenbudget</label>
+            <input id="activeWeekBudget" type="number" min="0" max="1000" step="0.5" aria-label="Urenbudget actieve week" />
+            <span class="header-budget-meta" id="activeWeekBudgetMeta"></span>
+          </div>
+          <button class="btn ghost" id="previewScheduleBtn" title="Open rustige afdrukweergave">▣ <span>Afdrukweergave</span></button>
+          <button class="btn ghost" id="clearScheduleBtn"><span id="clearScheduleLabel">Rooster wissen</span></button>
+          <button class="btn accent" id="generateBtnSchedule">✦ <span id="generateScheduleLabel">Automatisch verdelen</span></button>
+          <button id="exportBtn" hidden aria-hidden="true" tabindex="-1"></button>
         </div>
       </header>
 
@@ -1051,45 +1288,10 @@
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Medewerker toevoegen</h2>
-              <div class="subtle">Contracturen zijn het uitgangspunt; de maandverdeling wordt hierop naar rato berekend.</div>
-            </div>
-          </div>
-          <form id="employeeForm" class="form-grid">
-            <div class="field col-3">
-              <label for="employeeName">Naam</label>
-              <input id="employeeName" required placeholder="Bijv. Robin" />
-            </div>
-            <div class="field col-3">
-              <label for="employeeRole">Functie</label>
-              <input id="employeeRole" required placeholder="Bijv. verkoopmedewerker" />
-            </div>
-            <div class="field col-2">
-              <label for="employeeType">Type</label>
-              <select id="employeeType">
-                <option value="fixed">Vast</option>
-                <option value="weekend">Weekendhulp</option>
-                <option value="flex">Flex</option>
-              </select>
-            </div>
-            <div class="field col-2">
-              <label for="employeeHours">Uren per week</label>
-              <input id="employeeHours" type="number" min="1" max="60" step="0.5" value="24" required />
-            </div>
-            <button class="btn primary col-2" type="submit">+ Toevoegen</button>
-            <div class="field col-12">
-              <label>Beschikbare werkdagen</label>
-              <div class="days" id="newEmployeeDays"></div>
-            </div>
-          </form>
-        </section>
-
-        <section class="card">
-          <div class="card-head">
-            <div>
               <h2>Medewerkers</h2>
               <div class="subtle"><span id="employeeCount">0</span> actieve medewerkers.</div>
             </div>
+            <button class="employee-add-button" id="openEmployeeCreateBtn" type="button" aria-label="Nieuwe medewerker toevoegen" title="Nieuwe medewerker toevoegen">+</button>
           </div>
           <div class="employee-list" id="employeeList"></div>
         </section>
@@ -1097,25 +1299,15 @@
 
       <section class="view active" id="scheduleView">
         <section class="card editing" id="scheduleWorkspace">
-          <div class="schedule-toolbar">
-            <div class="month-switcher">
-              <button class="btn ghost small" id="prevMonth">←</button>
-              <input type="month" id="monthPickerSchedule" />
-              <button class="btn ghost small" id="nextMonth">→</button>
+          <div class="week-navigator" aria-label="Weeknavigatie">
+            <button class="btn ghost week-arrow" id="prevWeek" title="Vorige week" aria-label="Vorige week">←</button>
+            <div class="week-heading">
+              <strong id="activeWeekTitle">Week</strong>
+              <span id="activeWeekDates"></span>
             </div>
-            <div class="schedule-view-switch" aria-label="Roosterweergave">
-              <button class="schedule-mode-btn active" data-schedule-mode="matrix">Weekrooster</button>
-              <button class="schedule-mode-btn" data-schedule-mode="coverage">Dekking per dag</button>
-            </div>
-            <div class="top-actions">
-              <button class="btn ghost" id="previewScheduleBtn" title="Open rustige afdrukweergave">▣ Afdrukweergave</button>
-              <button class="btn ghost" id="clearScheduleBtn">Rooster wissen</button>
-              <button class="btn accent" id="generateBtnSchedule">✦ Automatisch verdelen</button>
-            </div>
+            <button class="btn ghost week-arrow" id="nextWeek" title="Volgende week" aria-label="Volgende week">→</button>
           </div>
-          <div class="week-tabs" id="weekTabs"></div>
           <div id="scheduleNotice"></div>
-          <div class="week-summary" id="weekSummary"></div>
           <div class="schedule-panel" id="matrixPanel">
             <div class="matrix-print-heading" id="matrixPrintHeading"></div>
             <div class="matrix-wrap">
@@ -1126,46 +1318,37 @@
             <div class="schedule-grid" id="scheduleGrid"></div>
           </div>
         </section>
-        <div class="grid-2 edit-settings-grid">
-          <section class="card">
-            <div class="card-head"><div><h2>Planregels</h2><div class="subtle">Voorkomt korte snipperdiensten en te volle weken.</div></div></div>
-            <div class="form-grid">
-              <div class="field col-6"><label for="monthPickerSettings">Te plannen maand</label><input id="monthPickerSettings" type="month" /></div>
-              <div class="field col-3"><label for="minShift">Min. dienst</label><input id="minShift" type="number" min="1" max="10" step="0.5" /></div>
-              <div class="field col-3"><label for="maxShift">Max. dienst</label><input id="maxShift" type="number" min="2" max="12" step="0.5" /></div>
-              <div class="field col-6"><label for="maxDays">Max. werkdagen per week</label><input id="maxDays" type="number" min="1" max="7" step="1" /></div>
-              <div class="field col-6"><label for="weeklyDeviation">Max. afwijking per week</label><select id="weeklyDeviation"><option value="0.15">15%</option><option value="0.25">25%</option><option value="0.35">35%</option><option value="0.5">50%</option></select></div>
-              <div class="field col-12"><label for="rounding">Afronden op</label><select id="rounding"><option value="0.25">15 minuten</option><option value="0.5">30 minuten</option><option value="1">Hele uren</option></select></div>
-            </div>
-          </section>
-          <section class="card">
-            <div class="card-head"><div><h2>Urenbudget per week</h2><div class="subtle">Beschikbare personeelsuren vanuit de directie.</div></div></div>
-            <div class="week-budget-list" id="weekBudgetList"></div>
-          </section>
-        </div>
-      </section>
-
-      <section class="view" id="storeView">
-        <section class="card">
-          <div class="card-head"><div><h2>Openingstijden en drukte</h2><div class="subtle">Leg per dag vast wanneer de winkel open is en hoe zwaar die dag meetelt.</div></div></div>
-          <div id="openingHoursList"></div>
-        </section>
       </section>
 
       <section class="view" id="settingsView">
-        <div class="grid-2">
-          <section class="card">
-            <div class="card-head"><div><h2>Weergave</h2><div class="subtle">Pas alleen de uitstraling aan; het rooster zelf verandert niet.</div></div></div>
-            <div class="form-grid">
-              <div class="field col-12"><label for="themeSelect">Kleurthema</label><select id="themeSelect"><option value="blue">Blauwgroen</option><option value="navy">Donkerblauw</option><option value="forest">Bosgroen</option></select></div>
-              <div class="field col-12"><label for="densitySelect">Dichtheid</label><select id="densitySelect"><option value="comfortable">Ruim</option><option value="compact">Compact</option></select></div>
-            </div>
-          </section>
-          <section class="card">
-            <div class="card-head"><div><h2>Over deze planner</h2><div class="subtle">Gegevens blijven lokaal in deze browser bewaard.</div></div></div>
-            <p class="subtle" style="margin:0;line-height:1.65">Gebruik <strong>Rooster</strong> om te genereren en diensten aan te passen. Met <strong>Afdrukweergave</strong> open je hetzelfde rooster tijdelijk zonder navigatie of bewerkknoppen.</p>
-          </section>
-        </div>
+        <section class="card">
+          <div class="card-head"><div><h2>Weergave</h2><div class="subtle">Pas alleen de uitstraling aan; het rooster zelf verandert niet.</div></div></div>
+          <div class="form-grid">
+            <div class="field col-6"><label for="themeSelect">Kleurthema</label><select id="themeSelect"><option value="blue">Blauwgroen</option><option value="navy">Donkerblauw</option><option value="forest">Bosgroen</option></select></div>
+            <div class="field col-6"><label for="densitySelect">Dichtheid</label><select id="densitySelect"><option value="comfortable">Ruim</option><option value="compact">Compact</option></select></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2>Winkel</h2><div class="subtle">Standaard openingstijden en drukte per dag. Losse uitzonderingen stel je in via de dagkoppen in het rooster.</div></div></div>
+          <div id="openingHoursList"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2>Rooster</h2><div class="subtle">Planregels voor de automatische verdeling. Voorkomt korte snipperdiensten en te volle weken.</div></div></div>
+          <div class="form-grid">
+            <div class="field col-3"><label for="minShift">Min. dienst</label><input id="minShift" type="number" min="1" max="10" step="0.5" /></div>
+            <div class="field col-3"><label for="maxShift">Max. dienst</label><input id="maxShift" type="number" min="2" max="12" step="0.5" /></div>
+            <div class="field col-3"><label for="maxDays">Max. werkdagen per week</label><input id="maxDays" type="number" min="1" max="7" step="1" /></div>
+            <div class="field col-3"><label for="weeklyDeviation">Max. afwijking per week</label><select id="weeklyDeviation"><option value="0.15">15%</option><option value="0.25">25%</option><option value="0.35">35%</option><option value="0.5">50%</option></select></div>
+            <div class="field col-6"><label for="rounding">Afronden op</label><select id="rounding"><option value="0.25">15 minuten</option><option value="0.5">30 minuten</option><option value="1">Hele uren</option></select></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><div><h2>Over deze planner</h2><div class="subtle">Gegevens blijven lokaal in deze browser bewaard.</div></div></div>
+          <p class="subtle" style="margin:0;line-height:1.65">Gebruik <strong>Rooster</strong> om te genereren en diensten aan te passen. Met <strong>Afdrukweergave</strong> open je hetzelfde rooster tijdelijk zonder navigatie of bewerkknoppen. Klik op een <strong>dagkop</strong> in het rooster om de openingstijden voor één dag af te wijken.</p>
+        </section>
       </section>
 
       <section class="view" id="analysisView">
@@ -1233,6 +1416,50 @@
       <button class="btn primary" id="closePreviewBtn">Sluiten</button>
     </div>
   </div>
+  <div class="modal-backdrop" id="employeeCreateModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="employeeCreateModalTitle">
+      <div class="modal-head">
+        <h3 id="employeeCreateModalTitle">Nieuwe medewerker</h3>
+        <button class="modal-close" data-close-modal="employeeCreateModal">×</button>
+      </div>
+      <form id="employeeForm" class="form-grid">
+        <div class="field col-6">
+          <label for="employeeName">Naam</label>
+          <input id="employeeName" required placeholder="Bijv. Robin" />
+        </div>
+        <div class="field col-6">
+          <label for="employeeRole">Rol</label>
+          <select id="employeeRole" required>
+            <option value="Employee">Medewerker</option>
+            <option value="Assistant">Assistent</option>
+            <option value="Manager">Manager</option>
+          </select>
+        </div>
+        <div class="field col-6">
+          <label for="employeeType">Type</label>
+          <select id="employeeType">
+            <option value="fixed">Vast</option>
+            <option value="weekend">Weekendhulp</option>
+          </select>
+        </div>
+        <div class="field col-6">
+          <label for="employeeHours">Uren per week</label>
+          <input id="employeeHours" type="number" min="1" max="60" step="0.5" value="24" required />
+        </div>
+        <div class="field col-12">
+          <label>Beschikbare werkdagen</label>
+          <div class="days" id="newEmployeeDays"></div>
+        </div>
+        <div class="modal-actions col-12">
+          <div class="modal-actions-right">
+            <button type="button" class="btn ghost" data-close-modal="employeeCreateModal">Annuleren</button>
+            <button class="btn accent" type="submit">Medewerker toevoegen</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="employeeModal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="employeeModalTitle">
       <div class="modal-head">
@@ -1246,15 +1473,18 @@
           <input id="editEmployeeName" required />
         </div>
         <div class="field col-6">
-          <label for="editEmployeeRole">Functie</label>
-          <input id="editEmployeeRole" required />
+          <label for="editEmployeeRole">Rol</label>
+          <select id="editEmployeeRole" required>
+            <option value="Employee">Medewerker</option>
+            <option value="Assistant">Assistent</option>
+            <option value="Manager">Manager</option>
+          </select>
         </div>
         <div class="field col-6">
           <label for="editEmployeeType">Type</label>
           <select id="editEmployeeType">
             <option value="fixed">Vast</option>
             <option value="weekend">Weekendhulp</option>
-            <option value="flex">Flex</option>
           </select>
         </div>
         <div class="field col-6">
@@ -1311,6 +1541,43 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="dayModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dayModalTitle">
+      <div class="modal-head">
+        <h3 id="dayModalTitle">Dag aanpassen</h3>
+        <button class="modal-close" data-close-modal="dayModal">×</button>
+      </div>
+      <form id="dayForm" class="form-grid">
+        <input type="hidden" id="dayDate" />
+        <div class="field col-12">
+          <div class="subtle" id="dayModalHint"></div>
+        </div>
+        <div class="field col-12">
+          <label for="dayOpen">Status</label>
+          <select id="dayOpen">
+            <option value="true">Open</option>
+            <option value="false">Gesloten</option>
+          </select>
+        </div>
+        <div class="field col-6">
+          <label for="dayStart">Opent</label>
+          <input id="dayStart" type="time" step="900" />
+        </div>
+        <div class="field col-6">
+          <label for="dayEnd">Sluit</label>
+          <input id="dayEnd" type="time" step="900" />
+        </div>
+        <div class="modal-actions col-12">
+          <button type="button" class="btn danger" id="resetDayBtn">Standaard herstellen</button>
+          <div class="modal-actions-right">
+            <button type="button" class="btn ghost" data-close-modal="dayModal">Annuleren</button>
+            <button type="submit" class="btn primary">Opslaan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -1324,11 +1591,11 @@
       const defaultState = {
         month: new Date().toISOString().slice(0, 7),
         employees: [
-          { id: uid(), name: 'Samira', role: 'Filiaalverantwoordelijke', type: 'fixed', weeklyHours: 32, availability: [1,1,1,1,1,0,0], active: true },
-          { id: uid(), name: 'Daan', role: 'Verkoopmedewerker', type: 'fixed', weeklyHours: 28, availability: [1,1,1,1,1,1,0], active: true },
-          { id: uid(), name: 'Noor', role: 'Verkoopmedewerker', type: 'fixed', weeklyHours: 24, availability: [1,1,1,1,1,1,0], active: true },
-          { id: uid(), name: 'Finn', role: 'Weekendhulp', type: 'weekend', weeklyHours: 8, availability: [0,0,0,0,0,1,1], active: true },
-          { id: uid(), name: 'Mila', role: 'Weekendhulp', type: 'weekend', weeklyHours: 6, availability: [0,0,0,0,0,1,1], active: true }
+          { id: uid(), name: 'Samira', role: 'Manager', type: 'fixed', weeklyHours: 32, availability: [1,1,1,1,1,0,0], active: true },
+          { id: uid(), name: 'Daan', role: 'Assistant', type: 'fixed', weeklyHours: 28, availability: [1,1,1,1,1,1,0], active: true },
+          { id: uid(), name: 'Noor', role: 'Assistant', type: 'fixed', weeklyHours: 24, availability: [1,1,1,1,1,1,0], active: true },
+          { id: uid(), name: 'Finn', role: 'Assistant', type: 'weekend', weeklyHours: 8, availability: [0,0,0,0,0,1,1], active: true },
+          { id: uid(), name: 'Mila', role: 'Assistant', type: 'weekend', weeklyHours: 6, availability: [0,0,0,0,0,1,1], active: true }
         ],
         settings: {
           minShift: 4,
@@ -1349,12 +1616,13 @@
           ]
         },
         weeklyBudgets: {},
+        dayOverrides: {},
         shifts: []
       };
 
       let state = loadState();
       let activeView = 'schedule';
-      let activeWeekKey = null;
+      let activeWeekKey = dateKey(startOfWeek(new Date()));
       let activeScheduleMode = 'matrix';
       let toastTimer = null;
 
@@ -1383,8 +1651,8 @@
         next.employees = Array.isArray(value.employees) ? value.employees.map(emp => ({
           id: emp.id || uid(),
           name: String(emp.name || 'Naamloos'),
-          role: String(emp.role || 'Medewerker'),
-          type: ['fixed','weekend','flex'].includes(emp.type) ? emp.type : 'fixed',
+          role: normalizeEmployeeRole(emp.role),
+          type: ['fixed','weekend'].includes(emp.type) ? emp.type : 'fixed',
           weeklyHours: clampNumber(emp.weeklyHours, 1, 60, 24),
           availability: Array.isArray(emp.availability) && emp.availability.length === 7 ? emp.availability.map(Boolean) : [1,1,1,1,1,0,0],
           active: emp.active !== false
@@ -1401,6 +1669,18 @@
           start: shift.start,
           end: shift.end
         })) : [];
+        next.dayOverrides = {};
+        if (value.dayOverrides && typeof value.dayOverrides === 'object') {
+          Object.entries(value.dayOverrides).forEach(([key, ov]) => {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(key) && ov && typeof ov === 'object') {
+              next.dayOverrides[key] = {
+                open: ov.open !== false,
+                start: typeof ov.start === 'string' ? ov.start : '09:00',
+                end: typeof ov.end === 'string' ? ov.end : '18:00'
+              };
+            }
+          });
+        }
         return next;
       }
 
@@ -1572,7 +1852,7 @@
         let fullWeight = 0;
         let monthWeight = 0;
         week.days.forEach((date, dayIndex) => {
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(date);
           if (!opening.open) return;
           const weight = duration(opening.start, opening.end) * Math.max(0.1, Number(opening.factor) || 1);
           fullWeight += weight;
@@ -1591,6 +1871,16 @@
         return true;
       }
 
+      function openingForDate(date) {
+        const dayIndex = (date.getDay() + 6) % 7;
+        const base = state.settings.openingHours[dayIndex];
+        const override = state.dayOverrides && state.dayOverrides[dateKey(date)];
+        if (override) {
+          return { open: !!override.open, start: override.start || base.start, end: override.end || base.end, factor: base.factor, isOverride: true };
+        }
+        return { open: base.open, start: base.start, end: base.end, factor: base.factor, isOverride: false };
+      }
+
       function remainingOpenOpportunities(emp, fromDate) {
         const { year, monthIndex } = parseMonth(state.month);
         const last = new Date(year, monthIndex + 1, 0);
@@ -1598,15 +1888,37 @@
         let count = 0;
         while (cursor <= last) {
           const dayIndex = (cursor.getDay() + 6) % 7;
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(cursor);
           if (opening.open && isEmployeeAvailable(emp, dayIndex)) count += 1;
           cursor = addDays(cursor, 1);
         }
         return Math.max(1, count);
       }
 
+      function normalizeEmployeeRole(role) {
+        const value = String(role || '').toLowerCase();
+        if (value === 'manager' || value.includes('filiaal') || value.includes('leiding')) return 'Manager';
+        if (value === 'assistant' || value === 'assistent' || value.includes('assistent')) return 'Assistant';
+        return 'Employee';
+      }
+
+      function roleLabel(role) {
+        const normalizedRole = normalizeEmployeeRole(role);
+        if (normalizedRole === 'Manager') return 'Manager';
+        if (normalizedRole === 'Assistant') return 'Assistent';
+        return 'Medewerker';
+      }
+
+      function scheduleTypeLabel(emp) {
+        if (emp.type === 'weekend') return 'Weekendhulp';
+        const normalizedRole = normalizeEmployeeRole(emp.role);
+        if (normalizedRole === 'Manager') return 'Vast M';
+        if (normalizedRole === 'Assistant') return 'Vast A';
+        return 'Vast MW';
+      }
+
       function typeLabel(type) {
-        return type === 'weekend' ? 'Weekendhulp' : type === 'flex' ? 'Flex' : 'Vast';
+        return type === 'weekend' ? 'Weekendhulp' : 'Vast';
       }
 
       function renderDayPicker(container, values, onChange) {
@@ -1627,16 +1939,16 @@
 
       function switchView(view) {
         activeView = view;
+        document.body.classList.toggle('view-schedule', view === 'schedule');
         document.querySelectorAll('.view').forEach(section => section.classList.remove('active'));
         document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.view === view));
         const target = el(`${view}View`);
         if (target) target.classList.add('active');
         const titles = {
-          schedule: ['Rooster', 'Maak, controleer en publiceer het weekrooster.'],
+          schedule: ['Rooster', ''],
           employees: ['Medewerkers', 'Beheer functies, contracturen en beschikbaarheid.'],
-          store: ['Winkel', 'Beheer openingstijden, sluitingsdagen en drukte per dag.'],
           analysis: ['Analyse', 'Controleer uren, percentages en afwijkingen per maand en week.'],
-          settings: ['Instellingen', 'Pas kleur en weergave van de planner aan.']
+          settings: ['Instellingen', 'Weergave, winkel en planregels op één plek.']
         };
         const title = titles[view] || ['Werkrooster',''];
         el('pageTitle').textContent = title[0];
@@ -1646,8 +1958,6 @@
 
       function renderAll() {
         ensureWeekBudgets();
-        el('monthPickerSettings').value = state.month;
-        el('monthPickerSchedule').value = state.month;
         renderEmployees();
         renderSettings();
         renderSchedule();
@@ -1677,7 +1987,7 @@
           const card = document.createElement('div');
           card.className = 'employee-card';
           card.innerHTML = `
-            <div class="employee-name"><strong>${escapeHtml(emp.name)}</strong><span>${escapeHtml(emp.role)}</span></div>
+            <div class="employee-name"><strong>${escapeHtml(emp.name)}</strong><span>${roleLabel(emp.role)}</span></div>
             <span class="badge ${emp.type === 'weekend' ? 'weekend' : 'fixed'}">${typeLabel(emp.type)}</span>
             <strong>${formatHours(emp.weeklyHours)}</strong>
             <span class="subtle">± ${formatHours(monthlyBaseTarget(emp))}/mnd</span>
@@ -1748,20 +2058,15 @@
           hoursList.appendChild(row);
         });
 
-        const budgetList = el('weekBudgetList');
-        budgetList.innerHTML = '';
-        getMonthWeeks().forEach(week => {
-          const budget = getWeekBudget(week.key);
-          const planned = plannedForWeek(week.key);
-          const row = document.createElement('div');
-          row.className = 'week-budget-row';
-          row.innerHTML = `
-            <div><strong>Week ${getWeekNumber(week.start)}</strong><div class="subtle">${formatWeekLabel(week)}</div></div>
-            <input type="number" min="0" max="1000" step="0.5" value="${budget}" data-week-budget="${week.key}" aria-label="Budget week ${getWeekNumber(week.start)}" />
-            <div class="capacity">Ingepland: <strong>${formatHours(planned)}</strong></div>
-          `;
-          budgetList.appendChild(row);
-        });
+        const activeWeek = getMonthWeeks().find(week => week.key === activeWeekKey);
+        if (activeWeek) {
+          const budget = getWeekBudget(activeWeek.key);
+          const planned = plannedForWeek(activeWeek.key);
+          el('activeWeekBudget').value = budget;
+          el('activeWeekBudget').dataset.weekBudget = activeWeek.key;
+          el('activeWeekBudgetLabel').textContent = 'Urenbudget';
+          el('activeWeekBudgetMeta').textContent = '';
+        }
       }
 
       function setScheduleMode(mode) {
@@ -1775,32 +2080,35 @@
 
       function renderSchedule() {
         const weeks = getMonthWeeks();
-        if (!activeWeekKey || !weeks.some(week => week.key === activeWeekKey)) activeWeekKey = weeks[0]?.key || null;
-        const tabs = el('weekTabs');
-        tabs.innerHTML = weeks.map(week => `<button class="week-tab ${week.key === activeWeekKey ? 'active' : ''}" data-week-tab="${week.key}">Week ${getWeekNumber(week.start)} · ${formatDate(week.start, { day:'numeric', month:'short' })}</button>`).join('');
-
+        if (!activeWeekKey || !weeks.some(week => week.key === activeWeekKey)) {
+          const now = new Date();
+          const currentKey = dateKey(startOfWeek(now));
+          const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          if (state.month !== currentMonth) state.month = currentMonth;
+          const currentWeeks = getMonthWeeks();
+          activeWeekKey = currentWeeks.some(week => week.key === currentKey) ? currentKey : currentWeeks[0]?.key || null;
+        }
         const week = weeks.find(item => item.key === activeWeekKey);
         const grid = el('scheduleGrid');
         const matrix = el('scheduleMatrix');
-        const summary = el('weekSummary');
         const notice = el('scheduleNotice');
         if (!week) {
           grid.innerHTML = '';
           matrix.innerHTML = '';
-          summary.innerHTML = '';
+          el('activeWeekTitle').textContent = 'Geen week';
+          el('activeWeekDates').textContent = '';
           return;
         }
+
+        el('activeWeekTitle').textContent = `Week ${getWeekNumber(week.start)}`;
+        el('activeWeekDates').textContent = formatWeekLabel(week);
+        const monthName = new Intl.DateTimeFormat('nl-NL', { month: 'long' }).format(new Date(parseMonth(state.month).year, parseMonth(state.month).monthIndex, 1));
+        el('generateScheduleLabel').textContent = `${monthName} automatisch verdelen`;
+        el('clearScheduleLabel').textContent = `Rooster ${monthName} wissen`;
 
         const budget = getWeekBudget(week.key);
         const planned = plannedForWeek(week.key);
         const diff = roundHours(planned - budget);
-        summary.innerHTML = `
-          <span class="summary-chip">Budget ${formatHours(budget)}</span>
-          <span class="summary-chip">Gepland ${formatHours(planned)}</span>
-          <span class="summary-chip ${Math.abs(diff) <= 0.5 ? 'ok' : diff > 0 ? 'bad' : 'warn'}">${diff > 0 ? '+' : ''}${formatHours(diff)} verschil</span>
-          <span class="summary-chip">${week.days.filter(day => day.getMonth() === parseMonth(state.month).monthIndex).length} dagen in deze maand</span>
-        `;
-
         el('matrixPrintHeading').innerHTML = `
           <div>
             <h2>Weekrooster · week ${getWeekNumber(week.start)}</h2>
@@ -1812,15 +2120,13 @@
         const invalidShifts = state.shifts.filter(shift => shift.date.startsWith(state.month) && !state.employees.some(emp => emp.id === shift.employeeId));
         if (invalidShifts.length) {
           notice.innerHTML = '<div class="alert warning">Er staan diensten van verwijderde medewerkers in het rooster. Verwijder of pas deze diensten handmatig aan.</div>';
-        } else if (!state.shifts.some(shift => shift.date.startsWith(state.month))) {
-          notice.innerHTML = '<div class="alert info">Nog geen rooster voor deze maand. Gebruik “Automatisch verdelen” en pas daarna losse diensten handmatig aan.</div>';
         } else {
           notice.innerHTML = '';
         }
 
         renderScheduleMatrix(week);
         renderCoverageGrid(week);
-        setScheduleMode(activeScheduleMode);
+        setScheduleMode('matrix');
       }
 
       function renderScheduleMatrix(week) {
@@ -1828,15 +2134,15 @@
         const employees = getActiveEmployees();
         const { monthIndex } = parseMonth(state.month);
         const dayHeaders = week.days.map((date, dayIndex) => {
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(date);
           const meta = `${formatDate(date, { day:'numeric', month:'short' })} · ${opening.open ? `${opening.start}–${opening.end}` : 'gesloten'}`;
-          return `<th title="${escapeHtml(dayNames[dayIndex])} · ${escapeHtml(meta)}"><span class="matrix-day-name">${dayNames[dayIndex]}</span><span class="matrix-day-meta">${escapeHtml(meta)}</span></th>`;
+          return `<th title="${escapeHtml(dayNames[dayIndex])} · ${escapeHtml(meta)}"><button type="button" class="matrix-day-btn${opening.isOverride ? ' has-override' : ''}" data-day-header="${dateKey(date)}" title="Openingstijden aanpassen"><span class="matrix-day-name">${dayNames[dayIndex]}</span><span class="matrix-day-meta">${escapeHtml(meta)}</span>${opening.isOverride ? '<span class="matrix-day-flag">aangepast</span>' : ''}</button></th>`;
         }).join('');
 
         const rows = employees.map(emp => {
           const cells = week.days.map((date, dayIndex) => {
             const key = dateKey(date);
-            const opening = state.settings.openingHours[dayIndex];
+            const opening = openingForDate(date);
             const shifts = state.shifts
               .filter(shift => shift.date === key && shift.employeeId === emp.id)
               .sort((a, b) => a.start.localeCompare(b.start));
@@ -1850,14 +2156,14 @@
               return `<td><button class="matrix-cell has-shift ${outside ? 'is-outside' : ''}" data-edit-shift="${first.id}" title="${escapeHtml(emp.name)} · ${escapeHtml(timeLabel)}"><span class="matrix-shift-time">${escapeHtml(timeLabel)}</span><span class="matrix-shift-meta">${formatHours(total)}${extra}</span></button></td>`;
             }
             if (!opening.open) return '<td><button class="matrix-cell is-closed" disabled><span class="matrix-empty-label">Gesloten</span></button></td>';
-            if (!available) return '<td><button class="matrix-cell is-unavailable" disabled><span class="matrix-empty-label">Niet beschikbaar</span></button></td>';
+            if (!available) return '<td><button class="matrix-cell is-unavailable" disabled title="Niet beschikbaar"><span class="matrix-empty-label">X</span></button></td>';
             return `<td><button class="matrix-cell is-free ${outside ? 'is-outside' : ''}" data-add-shift="${key}" data-employee-id="${emp.id}" title="Dienst toevoegen voor ${escapeHtml(emp.name)}"><span class="matrix-empty-label">Vrij</span></button></td>`;
           }).join('');
           const employeeTotal = week.days.reduce((sum, date) => sum + state.shifts
             .filter(shift => shift.date === dateKey(date) && shift.employeeId === emp.id)
             .reduce((sub, shift) => sub + shiftHours(shift), 0), 0);
           return `<tr>
-            <th class="matrix-employee" title="${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}"><span class="matrix-employee-name">${escapeHtml(emp.name)}</span><span class="matrix-employee-role">${escapeHtml(emp.role)} · ${typeLabel(emp.type)}</span></th>
+            <th class="matrix-employee" title="${escapeHtml(emp.name)} · ${scheduleTypeLabel(emp)}"><span class="matrix-employee-name">${escapeHtml(emp.name)}</span><span class="matrix-employee-role">${scheduleTypeLabel(emp)}</span></th>
             ${cells}
             <td class="matrix-total">${formatHours(employeeTotal)}</td>
           </tr>`;
@@ -1878,7 +2184,7 @@
         const { monthIndex } = parseMonth(state.month);
         week.days.forEach((date, dayIndex) => {
           const key = dateKey(date);
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(date);
           const shifts = state.shifts
             .filter(shift => shift.date === key)
             .sort((a, b) => a.start.localeCompare(b.start));
@@ -1932,7 +2238,7 @@
           const status = Math.abs(diff) <= Math.max(1, target * .05) ? 'ok' : Math.abs(diff) <= Math.max(2, target * .12) ? 'warn' : 'bad';
           return `
             <tr>
-              <td><strong>${escapeHtml(emp.name)}</strong><div class="subtle">${escapeHtml(emp.role)}</div></td>
+              <td><strong>${escapeHtml(emp.name)}</strong><div class="subtle">${roleLabel(emp.role)}</div></td>
               <td>${formatHours(emp.weeklyHours)}/wk</td>
               <td>${formatHours(base)}</td>
               <td>${formatHours(target)}</td>
@@ -2059,7 +2365,7 @@
 
           dayDemands.forEach(({ date, dayIndex, demand }) => {
             if (demand <= 0.01) return;
-            const opening = state.settings.openingHours[dayIndex];
+            const opening = openingForDate(date);
             const openHours = duration(opening.start, opening.end);
             let remaining = demand;
             let safety = 0;
@@ -2140,40 +2446,57 @@
       }
 
       function calculateDayDemands(week, budget, monthIndex) {
+        const minShift = Number(state.settings.minShift);
+        const activeEmployees = getActiveEmployees();
         const openDays = week.days.map((date, dayIndex) => {
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(date);
           const inMonth = date.getMonth() === monthIndex;
           const openDuration = opening.open && inMonth ? duration(opening.start, opening.end) : 0;
-          const weight = openDuration * Math.max(0.1, Number(opening.factor) || 1);
-          return { date, dayIndex, weight, openDuration };
-        });
-        const totalWeight = openDays.reduce((sum, day) => sum + day.weight, 0);
-        if (!totalWeight) return openDays.map(day => ({ ...day, demand: 0 }));
-        let assigned = 0;
-        const result = openDays.map((day, index) => {
-          let demand = index === openDays.length - 1 ? budget - assigned : roundHours(budget * day.weight / totalWeight);
-          demand = Math.max(0, demand);
-          assigned += demand;
-          return { ...day, demand };
-        });
-        const minShift = Number(state.settings.minShift);
-        result.filter(day => day.demand > 0.01 && day.demand < minShift - 0.01).forEach(smallDay => {
-          const receiver = result
-            .filter(day => day !== smallDay && day.weight > 0)
-            .sort((a, b) => b.weight - a.weight)[0];
-          if (receiver) {
-            receiver.demand = roundHours(receiver.demand + smallDay.demand);
-            smallDay.demand = 0;
-          }
+          const hasAvailableEmployee = activeEmployees.some(emp => isEmployeeAvailable(emp, dayIndex));
+          const canSchedule = openDuration > 0 && hasAvailableEmployee;
+          const weight = canSchedule ? openDuration * Math.max(0.1, Number(opening.factor) || 1) : 0;
+          return { date, dayIndex, weight, openDuration, canSchedule, demand: 0 };
         });
 
-        const actualTotal = result.reduce((sum, day) => sum + day.demand, 0);
+        const schedulableDays = openDays.filter(day => day.canSchedule);
+        if (!schedulableDays.length || budget <= 0) return openDays;
+
+        // Iedere geopende dag krijgt eerst minimaal één echte dienst. Zonder deze
+        // basisdekking kon de gewogen verdeling rustige dagen volledig overslaan.
+        const baselineTotal = schedulableDays.length * minShift;
+        if (budget >= baselineTotal - 0.01) {
+          schedulableDays.forEach(day => { day.demand = minShift; });
+          let remainingBudget = roundHours(budget - baselineTotal);
+          const totalWeight = schedulableDays.reduce((sum, day) => sum + day.weight, 0);
+          let distributed = 0;
+          schedulableDays.forEach((day, index) => {
+            const extra = index === schedulableDays.length - 1
+              ? roundHours(remainingBudget - distributed)
+              : roundHours(remainingBudget * day.weight / totalWeight);
+            day.demand = roundHours(day.demand + Math.max(0, extra));
+            distributed = roundHours(distributed + Math.max(0, extra));
+          });
+        } else {
+          // Bij een uitzonderlijk laag budget kunnen niet alle open dagen met de
+          // minimale dienstlengte worden gevuld. Kies dan bewust de belangrijkste dagen.
+          const coverCount = Math.max(1, Math.floor(budget / minShift));
+          const selected = [...schedulableDays]
+            .sort((a, b) => b.weight - a.weight || a.dayIndex - b.dayIndex)
+            .slice(0, coverCount);
+          selected.forEach(day => { day.demand = minShift; });
+          let remainingBudget = roundHours(budget - coverCount * minShift);
+          if (remainingBudget > 0.01 && selected.length) {
+            selected[0].demand = roundHours(selected[0].demand + remainingBudget);
+          }
+        }
+
+        const actualTotal = openDays.reduce((sum, day) => sum + day.demand, 0);
         const difference = roundHours(budget - actualTotal);
         if (Math.abs(difference) > 0.01) {
-          const candidate = [...result].filter(day => day.weight > 0).sort((a,b) => b.weight - a.weight)[0];
+          const candidate = [...schedulableDays].sort((a, b) => b.weight - a.weight)[0];
           if (candidate) candidate.demand = roundHours(Math.max(0, candidate.demand + difference));
         }
-        return result;
+        return openDays;
       }
 
       function chooseShiftPlacement(opening, length, index) {
@@ -2222,7 +2545,7 @@
         if (!emp) return;
         el('editEmployeeId').value = emp.id;
         el('editEmployeeName').value = emp.name;
-        el('editEmployeeRole').value = emp.role;
+        el('editEmployeeRole').value = normalizeEmployeeRole(emp.role);
         el('editEmployeeType').value = emp.type;
         el('editEmployeeHours').value = emp.weeklyHours;
         const values = [...emp.availability];
@@ -2237,12 +2560,12 @@
         const shift = shiftId ? state.shifts.find(item => item.id === shiftId) : null;
         const targetDate = shift?.date || date;
         const dayIndex = (new Date(`${targetDate}T12:00:00`).getDay() + 6) % 7;
-        const opening = state.settings.openingHours[dayIndex];
+        const opening = openingForDate(new Date(`${targetDate}T12:00:00`));
         const eligible = getActiveEmployees().filter(emp => isEmployeeAvailable(emp, dayIndex));
         el('shiftModalTitle').textContent = shift ? 'Dienst aanpassen' : 'Dienst toevoegen';
         el('shiftId').value = shift?.id || '';
         el('shiftDate').value = targetDate;
-        el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}</option>`).join('');
+        el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${roleLabel(emp.role)}</option>`).join('');
         if (shift && !eligible.some(emp => emp.id === shift.employeeId)) {
           const emp = state.employees.find(item => item.id === shift.employeeId);
           el('shiftEmployee').insertAdjacentHTML('beforeend', `<option value="${shift.employeeId}">${escapeHtml(emp?.name || 'Onbekend')}</option>`);
@@ -2252,6 +2575,25 @@
         el('shiftEnd').value = shift?.end || hoursToTime(Math.min(timeToHours(opening.end), timeToHours(opening.start) + Number(state.settings.minShift)));
         el('deleteShiftBtn').style.visibility = shift ? 'visible' : 'hidden';
         openModal('shiftModal');
+      }
+
+      function openDayModal(key) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return;
+        const date = new Date(`${key}T12:00:00`);
+        const dayIndex = (date.getDay() + 6) % 7;
+        const base = state.settings.openingHours[dayIndex];
+        const current = openingForDate(date);
+        const factorLabels = { 0.75: 'Rustig', 1: 'Normaal', 1.25: 'Druk', 1.5: 'Heel druk' };
+        el('dayDate').value = key;
+        el('dayModalTitle').textContent = `${dayNames[dayIndex]} ${formatDate(date, { day: 'numeric', month: 'long' })}`;
+        el('dayModalHint').textContent = `Alleen voor deze datum. De drukte volgt de standaard (${factorLabels[nearestFactorCategory(base.factor)] || 'Normaal'}).`;
+        el('dayOpen').value = String(current.open);
+        el('dayStart').value = current.open ? current.start : base.start;
+        el('dayEnd').value = current.open ? current.end : base.end;
+        el('dayStart').disabled = !current.open;
+        el('dayEnd').disabled = !current.open;
+        el('resetDayBtn').style.visibility = state.dayOverrides[key] ? 'visible' : 'hidden';
+        openModal('dayModal');
       }
 
       function openModal(id) { el(id).classList.add('open'); }
@@ -2271,7 +2613,7 @@
             shift.date,
             dayNames[(date.getDay() + 6) % 7],
             emp?.name || 'Onbekend',
-            emp?.role || '',
+            roleLabel(emp?.role),
             typeLabel(emp?.type),
             shift.start,
             shift.end,
@@ -2327,12 +2669,33 @@
         saveState();
       }
 
+      function setMenuOpen(open) {
+        document.body.classList.toggle('menu-open', open);
+        el('menuButton').setAttribute('aria-expanded', String(open));
+        el('sidebarMenu').setAttribute('aria-hidden', String(!open));
+        el('menuBackdrop').setAttribute('aria-hidden', String(!open));
+      }
+
       function attachEvents() {
-        document.querySelectorAll('.nav button').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
+        el('menuButton').addEventListener('click', () => setMenuOpen(!document.body.classList.contains('menu-open')));
+        el('menuBackdrop').addEventListener('click', () => setMenuOpen(false));
+        document.querySelectorAll('.nav button').forEach(button => button.addEventListener('click', () => {
+          switchView(button.dataset.view);
+          setMenuOpen(false);
+        }));
         document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => switchView(button.dataset.go)));
 
         let newAvailability = [1,1,1,1,1,0,0];
         renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+
+        el('openEmployeeCreateBtn').addEventListener('click', () => {
+          el('employeeForm').reset();
+          el('employeeHours').value = 24;
+          newAvailability = [1,1,1,1,1,0,0];
+          renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+          openModal('employeeCreateModal');
+          setTimeout(() => el('employeeName').focus(), 0);
+        });
 
         el('employeeType').addEventListener('change', event => {
           if (event.target.value === 'weekend') {
@@ -2346,7 +2709,7 @@
           state.employees.push({
             id: uid(),
             name: el('employeeName').value.trim(),
-            role: el('employeeRole').value.trim(),
+            role: normalizeEmployeeRole(el('employeeRole').value),
             type: el('employeeType').value,
             weeklyHours: Number(el('employeeHours').value),
             availability: [...newAvailability],
@@ -2356,6 +2719,7 @@
           el('employeeHours').value = 24;
           newAvailability = [1,1,1,1,1,0,0];
           renderDayPicker(el('newEmployeeDays'), newAvailability, updated => { newAvailability = [...updated]; });
+          closeModal('employeeCreateModal');
           saveState();
           toast('Medewerker toegevoegd.');
         });
@@ -2370,7 +2734,7 @@
           const emp = state.employees.find(item => item.id === el('editEmployeeId').value);
           if (!emp) return;
           emp.name = el('editEmployeeName').value.trim();
-          emp.role = el('editEmployeeRole').value.trim();
+          emp.role = normalizeEmployeeRole(el('editEmployeeRole').value);
           emp.type = el('editEmployeeType').value;
           emp.weeklyHours = Number(el('editEmployeeHours').value);
           emp.availability = JSON.parse(el('editEmployeeDays').dataset.values || '[1,1,1,1,1,0,0]');
@@ -2388,12 +2752,9 @@
           toast('Medewerker en bijbehorende diensten verwijderd.');
         });
 
-        el('settingsView').addEventListener('change', event => {
+        el('main').addEventListener('change', event => {
           const target = event.target;
-          if (target.id === 'monthPickerSettings') {
-            state.month = target.value;
-            activeWeekKey = null;
-          } else if (target.id === 'minShift') {
+          if (target.id === 'minShift') {
             state.settings.minShift = Number(target.value);
           } else if (target.id === 'maxShift') {
             state.settings.maxShift = Number(target.value);
@@ -2415,26 +2776,17 @@
           saveState();
         });
 
-        el('monthPickerSchedule').addEventListener('change', event => {
-          state.month = event.target.value;
-          activeWeekKey = null;
+        function changeActiveWeek(offset) {
+          const currentWeek = getMonthWeeks().find(item => item.key === activeWeekKey);
+          if (!currentWeek) return;
+          const targetStart = addDays(currentWeek.start, offset * 7);
+          state.month = `${targetStart.getFullYear()}-${String(targetStart.getMonth() + 1).padStart(2, '0')}`;
+          activeWeekKey = dateKey(startOfWeek(targetStart));
           saveState();
-        });
-        el('prevMonth').addEventListener('click', () => changeMonth(-1));
-        el('nextMonth').addEventListener('click', () => changeMonth(1));
+        }
 
-        el('weekTabs').addEventListener('click', event => {
-          const button = event.target.closest('[data-week-tab]');
-          if (!button) return;
-          activeWeekKey = button.dataset.weekTab;
-          renderSchedule();
-        });
-
-        document.querySelector('.schedule-view-switch').addEventListener('click', event => {
-          const button = event.target.closest('[data-schedule-mode]');
-          if (!button) return;
-          setScheduleMode(button.dataset.scheduleMode);
-        });
+        el('prevWeek').addEventListener('click', () => changeActiveWeek(-1));
+        el('nextWeek').addEventListener('click', () => changeActiveWeek(1));
 
         function openPrintPreview() {
           setScheduleMode('matrix');
@@ -2456,6 +2808,8 @@
 
         el('scheduleMatrix').addEventListener('click', event => {
           if (activeView !== 'schedule' || document.body.classList.contains('preview-mode')) return;
+          const dayHeader = event.target.closest('[data-day-header]');
+          if (dayHeader) { openDayModal(dayHeader.dataset.dayHeader); return; }
           const addButton = event.target.closest('[data-add-shift]');
           if (addButton) openShiftModal(addButton.dataset.addShift, '', addButton.dataset.employeeId || '');
           const editButton = event.target.closest('[data-edit-shift]');
@@ -2476,7 +2830,7 @@
           const dayIndex = (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
           const current = el('shiftEmployee').value;
           const eligible = getActiveEmployees().filter(emp => isEmployeeAvailable(emp, dayIndex));
-          el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${escapeHtml(emp.role)}</option>`).join('');
+          el('shiftEmployee').innerHTML = eligible.map(emp => `<option value="${emp.id}">${escapeHtml(emp.name)} · ${roleLabel(emp.role)}</option>`).join('');
           if (eligible.some(emp => emp.id === current)) el('shiftEmployee').value = current;
         });
 
@@ -2484,7 +2838,7 @@
           event.preventDefault();
           const date = el('shiftDate').value;
           const dayIndex = (new Date(`${date}T12:00:00`).getDay() + 6) % 7;
-          const opening = state.settings.openingHours[dayIndex];
+          const opening = openingForDate(new Date(`${date}T12:00:00`));
           const start = el('shiftStart').value;
           const end = el('shiftEnd').value;
           if (!opening.open) return toast('De winkel is op deze dag gesloten.');
@@ -2510,6 +2864,44 @@
           toast('Dienst verwijderd.');
         });
 
+        el('dayOpen').addEventListener('change', () => {
+          const closed = el('dayOpen').value !== 'true';
+          el('dayStart').disabled = closed;
+          el('dayEnd').disabled = closed;
+        });
+
+        el('dayForm').addEventListener('submit', event => {
+          event.preventDefault();
+          const key = el('dayDate').value;
+          if (!key) return;
+          const open = el('dayOpen').value === 'true';
+          const start = el('dayStart').value;
+          const end = el('dayEnd').value;
+          if (open) {
+            if (!start || !end) return toast('Vul een open- en sluittijd in.');
+            if (duration(start, end) <= 0) return toast('De sluittijd moet na de openingstijd liggen.');
+          }
+          const date = new Date(`${key}T12:00:00`);
+          const dayIndex = (date.getDay() + 6) % 7;
+          const base = state.settings.openingHours[dayIndex];
+          if (open === base.open && (!open || (start === base.start && end === base.end))) {
+            delete state.dayOverrides[key];
+          } else {
+            state.dayOverrides[key] = { open, start, end };
+          }
+          closeModal('dayModal');
+          saveState();
+          toast('Openingstijden voor deze dag bijgewerkt.');
+        });
+
+        el('resetDayBtn').addEventListener('click', () => {
+          const key = el('dayDate').value;
+          if (key) delete state.dayOverrides[key];
+          closeModal('dayModal');
+          saveState();
+          toast('Standaardtijden voor deze dag hersteld.');
+        });
+
         document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.closeModal)));
         el('themeSelect').addEventListener('change', event => {
           state.settings.theme = event.target.value;
@@ -2523,16 +2915,23 @@
         document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => {
           if (event.target === backdrop) closeModal(backdrop.id);
         }));
+        document.addEventListener('keydown', event => { if (event.key === 'Escape' && document.body.classList.contains('menu-open')) setMenuOpen(false); });
 
         el('generateBtnSchedule').addEventListener('click', generateSchedule);
         el('exportBtn').addEventListener('click', exportCsv);
         el('clearScheduleBtn').addEventListener('click', () => {
+          const { year, monthIndex } = parseMonth(state.month);
+          const monthName = new Intl.DateTimeFormat('nl-NL', { month: 'long' }).format(new Date(year, monthIndex, 1));
+          if (!confirm(`Rooster ${monthName} wissen?`)) return;
           state.shifts = state.shifts.filter(shift => !shift.date.startsWith(state.month));
           saveState();
-          toast('Rooster voor deze maand gewist.');
+          toast(`Rooster ${monthName} gewist.`);
         });
       }
 
+      const initialNow = new Date();
+      state.month = `${initialNow.getFullYear()}-${String(initialNow.getMonth() + 1).padStart(2, '0')}`;
+      activeWeekKey = dateKey(startOfWeek(initialNow));
       attachEvents();
       switchView('schedule');
     })();
