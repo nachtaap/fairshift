@@ -1881,6 +1881,52 @@
         return { open: base.open, start: base.start, end: base.end, factor: base.factor, isOverride: false };
       }
 
+      function reconcileShiftsForDate(key) {
+        const opening = openingForDate(new Date(`${key}T12:00:00`));
+        let removed = 0;
+        let adjusted = 0;
+        const nextShifts = [];
+
+        state.shifts.forEach(shift => {
+          if (shift.date !== key) {
+            nextShifts.push(shift);
+            return;
+          }
+
+          if (!opening.open) {
+            removed += 1;
+            return;
+          }
+
+          const clippedStart = Math.max(timeToHours(shift.start), timeToHours(opening.start));
+          const clippedEnd = Math.min(timeToHours(shift.end), timeToHours(opening.end));
+          if (clippedEnd <= clippedStart) {
+            removed += 1;
+            return;
+          }
+
+          const start = hoursToTime(clippedStart);
+          const end = hoursToTime(clippedEnd);
+          if (start !== shift.start || end !== shift.end) adjusted += 1;
+          nextShifts.push({ ...shift, start, end });
+        });
+
+        state.shifts = nextShifts;
+        return { removed, adjusted };
+      }
+
+      function reconcileShiftsForWeekday(dayIndex) {
+        const dates = [...new Set(state.shifts
+          .map(shift => shift.date)
+          .filter(key => (new Date(`${key}T12:00:00`).getDay() + 6) % 7 === dayIndex))];
+        return dates.reduce((totals, key) => {
+          const result = reconcileShiftsForDate(key);
+          totals.removed += result.removed;
+          totals.adjusted += result.adjusted;
+          return totals;
+        }, { removed: 0, adjusted: 0 });
+      }
+
       function remainingOpenOpportunities(emp, fromDate) {
         const { year, monthIndex } = parseMonth(state.month);
         const last = new Date(year, monthIndex + 1, 0);
@@ -2768,6 +2814,11 @@
             const index = Number(target.dataset.opening);
             const field = target.dataset.field;
             state.settings.openingHours[index][field] = field === 'open' ? target.value === 'true' : field === 'factor' ? Number(target.value) : target.value;
+            const result = reconcileShiftsForWeekday(index);
+            saveState();
+            if (result.removed) toast(`${result.removed} ingeplande ${result.removed === 1 ? 'dienst is' : 'diensten zijn'} verwijderd.`);
+            else if (result.adjusted) toast(`${result.adjusted} ${result.adjusted === 1 ? 'dienst is' : 'diensten zijn'} aangepast aan de nieuwe openingstijden.`);
+            return;
           } else if (target.dataset.weekBudget) {
             setWeekBudget(target.dataset.weekBudget, target.value);
           } else {
@@ -2889,17 +2940,23 @@
           } else {
             state.dayOverrides[key] = { open, start, end };
           }
+          const result = reconcileShiftsForDate(key);
           closeModal('dayModal');
           saveState();
-          toast('Openingstijden voor deze dag bijgewerkt.');
+          if (result.removed) toast(`${result.removed} ingeplande ${result.removed === 1 ? 'dienst is' : 'diensten zijn'} verwijderd.`);
+          else if (result.adjusted) toast(`${result.adjusted} ${result.adjusted === 1 ? 'dienst is' : 'diensten zijn'} aangepast aan de nieuwe openingstijden.`);
+          else toast('Openingstijden voor deze dag bijgewerkt.');
         });
 
         el('resetDayBtn').addEventListener('click', () => {
           const key = el('dayDate').value;
           if (key) delete state.dayOverrides[key];
+          const result = key ? reconcileShiftsForDate(key) : { removed: 0, adjusted: 0 };
           closeModal('dayModal');
           saveState();
-          toast('Standaardtijden voor deze dag hersteld.');
+          if (result.removed) toast(`${result.removed} ingeplande ${result.removed === 1 ? 'dienst is' : 'diensten zijn'} verwijderd.`);
+          else if (result.adjusted) toast(`${result.adjusted} ${result.adjusted === 1 ? 'dienst is' : 'diensten zijn'} aangepast aan de herstelde openingstijden.`);
+          else toast('Standaardtijden voor deze dag hersteld.');
         });
 
         document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', () => closeModal(button.dataset.closeModal)));
